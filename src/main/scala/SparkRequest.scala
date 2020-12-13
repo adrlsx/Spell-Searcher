@@ -9,13 +9,17 @@ object SparkRequest {
   sc.setLogLevel("WARN")
 
   private val creature_path: String = "output/creature.jsonl"
-  private val df: DataFrame = load_json(creature_path)
-  private val reverse_index: DataFrame = reverseIndex(df)
+  private val spell_path: String = "output/spell.jsonl"
+  private val df_creature: DataFrame = load_json(creature_path, multiline = true)
+  private val df_spell: DataFrame = load_json(spell_path, multiline = false)
+  //private val reverse_index: DataFrame = reverseIndex(df_creature)
+  println(df_creature.schema.prettyJson)
+  println(df_spell.schema.prettyJson)
 
-  private def load_json(json_path: String): DataFrame = {
+  private def load_json(json_path: String, multiline: Boolean): DataFrame = {
     // JSON: https://spark.apache.org/docs/latest/sql-data-sources-json.html
     // Saves the schema of the first line
-    val json_schema: StructType = spark.read.option("multiline", "true").json(json_path).schema
+    val json_schema: StructType = spark.read.option("multiline", value = multiline).json(json_path).schema
     // Read all the JSON file with the given schema
     spark.read.schema(json_schema).json(json_path)
   }
@@ -33,6 +37,10 @@ object SparkRequest {
 
   def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
                    componentOperator: String, spellResistance: String, spellName: String, description: Array[String]): DataFrame = {
+    var classRequest = ""
+    for(spellClass <- classArray){
+      classRequest += " class = " + spellClass + " " + classOperator
+    }
 
     return null
   }

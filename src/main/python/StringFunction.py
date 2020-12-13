@@ -29,8 +29,8 @@ def parse_classes(response: scrapy.http.Response, spell_number: int) -> Union[Di
         # Split each class and its corresponding level in an array
         class_list = class_list.split(',')
 
-        # Initialize an empty dictionary
-        classes = dict()
+        # List of dictionary object for each class
+        name_level_list = list()
         # For each class in the array saves the name as the key and the level as the value of the dictionary
         for each_class in class_list:
             name = sanitize(each_class)
@@ -38,8 +38,12 @@ def parse_classes(response: scrapy.http.Response, spell_number: int) -> Union[Di
             level = int(name[-1])
             # The name is the rest of the string, without the level and the space at the end
             name = name[:-2]
-            classes[name] = level
-        return classes
+            # Initialize an empty dictionary to store each class information
+            classes = dict()
+            classes["name"] = name
+            classes["level"] = level
+            name_level_list.append(classes)
+        return name_level_list
     else:
         return False
 

@@ -226,6 +226,7 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
 
     jLabel.addMouseListener(new MouseAdapter() {
       // https://stackoverflow.com/questions/2440134/is-this-the-proper-way-to-initialize-null-references-in-scala
+      // https://alvinalexander.com/scala/initialize-scala-variables-option-none-some-null-idiom/
       private var spellDisplay = Option.empty[SpellFrame]
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before

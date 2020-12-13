@@ -8,7 +8,7 @@ object Main {
     // External command: https://alvinalexander.com/scala/scala-execute-exec-external-system-commands-in-scala/
     val crawler: Int = 0
     //val crawler: Int = "python3 src/main/python/main.py".!
-    println("\nCrawling done. Starting GUI ...")
+    println("Crawling done. Starting GUI ...")
 
     if (crawler == 0){
       FlatIntelliJLaf.install()
