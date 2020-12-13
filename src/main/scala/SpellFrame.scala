@@ -15,7 +15,7 @@ class SpellFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type, spell
   val spellClasses: String = "alchemist 2, arcanist 3, bloodrager 2, investigator 2, magus 2, occultist 2, psychic 3, sorcerer 3, summoner 2, summoner (unchained) 3, wizard 3"
   val spellComponents: String = "V, S, M"
   val spellResistance: String = "false"
-  val spellImgPath: String = "input/img/ablative barrier.png"
+  val spellImgPath: String = "output/img/ablative barrier.png"
 
   // var is mutable contrary to val
   var nbResult: Int = 0
@@ -54,7 +54,7 @@ class SpellFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type, spell
         contents += Swing.VStrut(5)
 
         val jScrollPaneResult = new JScrollPane(jPanelResult)
-        jScrollPaneResult.setPreferredSize(new Dimension(300, 0))
+        jScrollPaneResult.setPreferredSize(new Dimension(300, 583))
 
         // Use Component.wrap() for link between javax.swing and scala.swing
         contents += Component.wrap(jScrollPaneResult)

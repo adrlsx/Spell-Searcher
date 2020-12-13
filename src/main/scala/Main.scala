@@ -14,9 +14,11 @@ object Main {
       FlatIntelliJLaf.install()
       // Initialize the dynamic elements necessary for the construction of the main window
       val searcher = Searcher
+
       // Initialize Apache Spark module and the reverse index
-      val sparkRequest = SparkRequest
-      val mainUI = new SearchFrame(searcher, sparkRequest)
+      // val sparkRequest = SparkRequest
+
+      val mainUI = new SearchFrame(searcher)
       mainUI.centerOnScreen()
       mainUI.open()
     }

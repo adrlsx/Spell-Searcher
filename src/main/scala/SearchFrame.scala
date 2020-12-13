@@ -1,12 +1,15 @@
 import SwingGeneralFunc.{addSeparator, getOperatorBox}
 
 import java.awt.event.{MouseAdapter, MouseEvent}
+import javax.swing.plaf.ProgressBarUI
 import javax.swing.{BoxLayout, JLabel, JPanel, JScrollPane}
 import scala.collection.immutable.TreeMap
 import scala.swing._
 
+import java.awt.Font.BOLD
+
 // Main frame : spell research by criteria
-class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) extends MainFrame {
+class SearchFrame(searcher: Searcher.type) extends MainFrame {
   // Set Window title
   title = "Spell Searcher"
 
@@ -14,6 +17,16 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
 
   // var is mutable contrary to val
   var nbResult: Int = 0
+
+
+  // Initialisation for loading bar and user return message
+  val userInfoLabel: Label = new Label {
+    text = "Waiting for search request"
+    font = new Font("Arial", BOLD, 12)
+  }
+
+  val progressBar: ProgressBar = new ProgressBar
+
 
   // Initialisation for research by Class
   // Round to upper with (if (searcher.getNbClass % nbGridColumn == 0) 0 else 1)
@@ -59,6 +72,17 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
   val descriptionTextField = new TextField()
 
 
+  // Initialisation for buttons
+  val resetBtn: Button = Button("Reset") { resetField() }
+  val researchBtn: Button = Button("Search") { launchResearch() }
+  val relaunchScrapyBtn: Button = Button("Update Database") {}
+
+  // https://flatuicolors.com/palette/defo
+  resetBtn.background = new Color(231, 76, 60)
+  researchBtn.background = new Color(46, 204, 113)
+  relaunchScrapyBtn.background = new Color(230, 126, 34)
+
+
   // Initialisation for results
   val jPanelResult = new JPanel()
   jPanelResult.setLayout(new BoxLayout(jPanelResult, BoxLayout.Y_AXIS))
@@ -66,144 +90,170 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
   val labelNbResult = new Label("Number: " + nbResult)
 
 
-  contents = new BoxPanel(Orientation.Vertical) {
-    // Set frame border margin
-    border = Swing.EmptyBorder(10, 10, 10, 10)
+  initInterface()
+  initSpark()
 
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Choose any of the options below to narrow the results of your research:")
 
-      // Takes remaining space
-      contents += Swing.Glue
-    }
 
-    addSeparator(contents)
+  def initInterface(): Unit = {
+    contents = new BoxPanel(Orientation.Vertical) {
+      // Set frame border margin
+      border = Swing.EmptyBorder(10, 10, 10, 10)
 
-    // Add box for class selection
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Classes: ")
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += userInfoLabel
 
-      // Add available classes dynamically
-      contents += new GridPanel(nbClassLine, nbGridColumn) {
-        for (className <- searcher.getAllClassName) {
-          checkBoxClassMap += (className -> new CheckBox(className))
-          contents += checkBoxClassMap(className)
+        contents += Swing.HStrut(20)
+
+        contents += progressBar
+
+        contents += Swing.HStrut(50)
+
+        contents += relaunchScrapyBtn
+      }
+
+      contents += Swing.VStrut(10)
+      contents += new Separator()
+      contents += new Separator()
+      contents += Swing.VStrut(10)
+
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("Choose any of the options below to narrow the results of your research:")
+
+        // Takes remaining space
+        contents += Swing.Glue
+      }
+
+      addSeparator(contents)
+
+      // Add box for class selection
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("Classes: ")
+
+        // Add available classes dynamically
+        contents += new GridPanel(nbClassLine, nbGridColumn) {
+          for (className <- searcher.getAllClassName) {
+            checkBoxClassMap += (className -> new CheckBox(className))
+            contents += checkBoxClassMap(className)
+          }
         }
       }
-    }
 
-    // Add box for class operator selection (AND or OR)
-    contents += getOperatorBox(btnClassAnd, btnClassOr)
+      // Add box for class operator selection (AND or OR)
+      contents += getOperatorBox(btnClassAnd, btnClassOr)
 
-    addSeparator(contents)
+      addSeparator(contents)
 
-    // Add box for school selection
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("School: ")
+      // Add box for school selection
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("School: ")
 
-      // Add available schools dynamically
-      contents += new GridPanel(nbSchoolLine, nbGridColumn) {
-        for (schoolName <- searcher.getAllSchoolName) {
-          checkBoxSchoolMap += (schoolName -> new CheckBox(schoolName))
-          contents += checkBoxSchoolMap(schoolName)
+        // Add available schools dynamically
+        contents += new GridPanel(nbSchoolLine, nbGridColumn) {
+          for (schoolName <- searcher.getAllSchoolName) {
+            checkBoxSchoolMap += (schoolName -> new CheckBox(schoolName))
+            contents += checkBoxSchoolMap(schoolName)
+          }
         }
       }
-    }
 
-    // Add box description for school selection
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("OR operator is applied, because a spell can only have one school. You will get the spells for each selected school")
-      contents += Swing.Glue
-    }
-
-    addSeparator(contents)
-
-    // Add box for component selection
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Component: ")
-
-      // Add available components dynamically
-      for (componentName <- searcher.getAllComponentName) {
-        checkBoxComponentMap += (componentName -> new CheckBox(componentName))
-        contents += checkBoxComponentMap(componentName)
-
-        // Add horizontal spacing
-        contents += Swing.HStrut(5)
+      // Add box description for school selection
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("OR operator is applied, because a spell can only have one school. You will get the spells for each selected school")
+        contents += Swing.Glue
       }
 
-      // Takes remaining space
+      addSeparator(contents)
+
+      // Add box for component selection
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("Component: ")
+
+        // Add available components dynamically
+        for (componentName <- searcher.getAllComponentName) {
+          checkBoxComponentMap += (componentName -> new CheckBox(componentName))
+          contents += checkBoxComponentMap(componentName)
+
+          // Add horizontal spacing
+          contents += Swing.HStrut(5)
+        }
+
+        // Takes remaining space
+        contents += Swing.Glue
+      }
+
+      // Add box for component operator selection (AND or OR)
+      contents += getOperatorBox(btnComponentAnd, btnComponentOr)
+
+      addSeparator(contents)
+
+      // Add box for spell resistance selection
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("Spell Resistance: ")
+
+        contents += btnSpellResistanceYes
+        contents += btnSpellResistanceNo
+        contents += btnSpellResistanceNotCheck
+
+        contents += Swing.Glue
+      }
+
+      addSeparator(contents)
+
+      // Add box for research by exact spell name
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("Exact spell Name: ")
+        contents += spellNameTextField
+        contents += Swing.Glue
+      }
+
+      addSeparator(contents)
+
+      // Add box for research by spell description (full text search)
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("Description: ")
+        contents += descriptionTextField
+        contents += Swing.Glue
+      }
+
+      contents += Swing.VStrut(10)
       contents += Swing.Glue
+
+      // Add reset and research buttons
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += resetBtn
+        contents += Swing.HStrut(50)
+        contents += researchBtn
+      }
+
+      addSeparator(contents)
+
+      // Add box for spell result number
+      contents += new BoxPanel(Orientation.Horizontal) {
+        contents += new Label("Spell result: ")
+        contents += Swing.Glue
+        contents += labelNbResult
+      }
+
+      contents += Swing.VStrut(5)
+
+      val jScrollPaneResult = new JScrollPane(jPanelResult)
+      jScrollPaneResult.setPreferredSize(new Dimension(0, 180))
+
+      // Use Component.wrap() for link between javax.swing and scala.swing
+      // Add scroll pane for spell results
+      contents += Component.wrap(jScrollPaneResult)
     }
 
-    // Add box for component operator selection (AND or OR)
-    contents += getOperatorBox(btnComponentAnd, btnComponentOr)
+  }
 
-    addSeparator(contents)
+  def initSpark(): Unit = {
+    disableResearch("Loading Apache Spark")
 
-    // Add box for spell resistance selection
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Spell Resistance: ")
+    // Initialize Apache Spark module and the reverse index
+    val sparkRequest: SparkRequest.type = SparkRequest
 
-      contents += btnSpellResistanceYes
-      contents += btnSpellResistanceNo
-      contents += btnSpellResistanceNotCheck
-
-      contents += Swing.Glue
-    }
-
-    addSeparator(contents)
-
-    // Add box for research by exact spell name
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Exact spell Name: ")
-      contents += spellNameTextField
-      contents += Swing.Glue
-    }
-
-    addSeparator(contents)
-
-    // Add box for research by spell description (full text search)
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Description: ")
-      contents += descriptionTextField
-      contents += Swing.Glue
-    }
-
-    contents += Swing.VStrut(10)
-    contents += Swing.Glue
-
-    // Add reset and research buttons
-    contents += new BoxPanel(Orientation.Horizontal) {
-      val resetBtn: Button = Button("Reset") { resetField() }
-      // https://flatuicolors.com/palette/defo
-      resetBtn.background = new Color(231, 76, 60)
-
-      val researchBtn: Button = Button("Search") { launchResearch() }
-      // https://flatuicolors.com/palette/defo
-      researchBtn.background = new Color(46, 204, 113)
-
-      contents += resetBtn
-      contents += Swing.HStrut(50)
-      contents += researchBtn
-    }
-
-    addSeparator(contents)
-
-    // Add box for spell result number
-    contents += new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Spell result: ")
-      contents += Swing.Glue
-      contents += labelNbResult
-    }
-
-    contents += Swing.VStrut(5)
-
-    val jScrollPaneResult = new JScrollPane(jPanelResult)
-    jScrollPaneResult.setPreferredSize(new Dimension(0, 180))
-
-    // Use Component.wrap() for link between javax.swing and scala.swing
-    // Add scroll pane for spell results
-    contents += Component.wrap(jScrollPaneResult)
+    enableResearch()
   }
 
 
@@ -219,7 +269,7 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
     val exactSpellName: String = spellNameTextField.text
     val description: Array[String] = getDescription
 
-    sparkRequest.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, exactSpellName, description )
+    //sparkRequest.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, exactSpellName, description )
 
     val jLabel = new JLabel("SPELL NAME")
 
@@ -231,7 +281,7 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
-          spellDisplay = Some(new SpellFrame(searcher, sparkRequest, jLabel.getText))
+          //spellDisplay = Some(new SpellFrame(searcher, sparkRequest, jLabel.getText))
           spellDisplay.get.centerOnScreen()
           spellDisplay.get.open()
         }
@@ -313,5 +363,21 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
     // Reset result number
     nbResult = 0
     labelNbResult.text = "Number: 0"
+  }
+
+  def disableResearch(msg: String): Unit = {
+    researchBtn.enabled = false
+    relaunchScrapyBtn.enabled = false
+
+    progressBar.indeterminate = true
+
+    userInfoLabel.text = msg
+  }
+
+  def enableResearch(): Unit = {
+    researchBtn.enabled = true
+    relaunchScrapyBtn.enabled = true
+
+    progressBar.value = 100
   }
 }
