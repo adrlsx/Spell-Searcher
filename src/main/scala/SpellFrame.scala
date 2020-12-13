@@ -5,10 +5,10 @@ import java.awt.event.{MouseAdapter, MouseEvent}
 import javax.swing._
 import scala.swing._
 
-class SpellFrame(searcher: Searcher.type, spellName: String) extends Frame {
+class SpellFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type, spellName: String) extends Frame {
 
-  searcher.getSpellInfo(spellName)
-  searcher.getCreatureList(spellName)
+  sparkRequest.getSpellInfo(spellName)
+  sparkRequest.getCreatureList(spellName)
 
   val spellUrl: String = "https://aonprd.com/SpellDisplay.aspx?ItemName=Ablative%20Barrier"
   val spellSchool: String = "Conjuration"
@@ -94,8 +94,19 @@ class SpellFrame(searcher: Searcher.type, spellName: String) extends Frame {
       val jLabel = new JLabel("TEST")
 
       jLabel.addMouseListener(new MouseAdapter() {
+        // https://stackoverflow.com/questions/2440134/is-this-the-proper-way-to-initialize-null-references-in-scala
+        private var creatureDisplay = Option.empty[CreatureFrame]
         override def mouseClicked(e: MouseEvent) {
-          new CreatureFrame(searcher, jLabel.getText).visible = true
+          // Create the SpellFrame if it has not been created before
+          if (creatureDisplay.isEmpty){
+            creatureDisplay = Some(new CreatureFrame(searcher, sparkRequest, jLabel.getText))
+            creatureDisplay.get.centerOnScreen()
+            creatureDisplay.get.open()
+          }
+          // elsewhere simply bring the window to the front
+          else{
+            creatureDisplay.get.open()
+          }
         }
       })
 

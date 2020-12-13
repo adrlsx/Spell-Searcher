@@ -12,10 +12,13 @@ object Main {
 
     if (crawler == 0){
       FlatIntelliJLaf.install()
+      // Initialize the dynamic elements necessary for the construction of the main window
       val searcher = Searcher
-      val mainUI = new SearchFrame(searcher)
+      // Initialize Apache Spark module and the reverse index
+      val sparkRequest = SparkRequest
+      val mainUI = new SearchFrame(searcher, sparkRequest)
       mainUI.centerOnScreen()
-      mainUI.visible = true
+      mainUI.open()
     }
     else {
       println("There was an error with the python crawler.\nExit code: " + crawler)

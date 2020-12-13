@@ -2,8 +2,9 @@ import SwingGeneralFunc.{getHorizontalBox, getWebsiteBtnBox}
 
 import scala.swing.{BoxPanel, Frame, Orientation, Swing}
 
-class CreatureFrame(searcher: Searcher.type, creatureName: String) extends Frame {
+class CreatureFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type, creatureName: String) extends Frame {
 
+  sparkRequest.getCreatureInfo(creatureName)
   val creatureUrl: String = "https://aonprd.com/MonsterDisplay.aspx?ItemName=Theletos"
   val creatureSpells: String = "Effect, Glitterdust, Cure, Frequency, Save"
   val creatureDescription: String = "Four bandy limbs, each splitting at the elbow into two three-fingered forearms, emerge from this creature’s crystalline body."

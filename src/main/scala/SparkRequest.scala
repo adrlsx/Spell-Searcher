@@ -4,13 +4,15 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SparkRequest {
   //Démarrer Spark
-  val spark: SparkSession = SparkSession.builder.appName("Advanced Spell Search").master("local[4]").getOrCreate()
-  val sc: spark.sparkContext.type = spark.sparkContext
+  private val spark: SparkSession = SparkSession.builder.appName("Advanced Spell Search").master("local[4]").getOrCreate()
+  private val sc: spark.sparkContext.type = spark.sparkContext
   sc.setLogLevel("WARN")
 
-  val creature_path: String = "output/creature.jsonl"
+  private val creature_path: String = "output/creature.jsonl"
+  private val df: DataFrame = load_json(creature_path)
+  private val reverse_index: DataFrame = reverseIndex(df)
 
-  def load_json(json_path: String): DataFrame = {
+  private def load_json(json_path: String): DataFrame = {
     // JSON: https://spark.apache.org/docs/latest/sql-data-sources-json.html
     // Saves the schema of the first line
     val json_schema: StructType = spark.read.option("multiline", "true").json(json_path).schema
@@ -18,7 +20,7 @@ object SparkRequest {
     spark.read.schema(json_schema).json(json_path)
   }
 
-  def reverseIndex(df: DataFrame): DataFrame = {
+  private def reverseIndex(df: DataFrame): DataFrame = {
     // Primitive types (Int, String, etc) and Product types (case classes) encoders are
     // supported by importing this when creating a Dataset.
     import spark.implicits._
@@ -29,7 +31,24 @@ object SparkRequest {
     reverse_index.groupBy("spells").agg(collect_set("name").as("creatures"))
   }
 
-  val df: DataFrame = load_json(creature_path)
-  val reverse_index: DataFrame = reverseIndex(df)
-  reverse_index.show(false)
+  def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
+                   componentOperator: String, spellResistance: String, spellName: String, description: Array[String]): DataFrame = {
+
+    return null
+  }
+
+  def getSpellInfo(spellName: String): DataFrame = {
+
+    return null
+  }
+
+  def getCreatureList(spellName: String): DataFrame = {
+
+    return null
+  }
+
+  def getCreatureInfo(creatureName: String): DataFrame = {
+
+    return null
+  }
 }

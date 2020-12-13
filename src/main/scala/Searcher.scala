@@ -4,8 +4,7 @@ import java.io.FileNotFoundException
 import scala.io.Source
 
 /*
- *  Object that contain class, school and component list for dynamically create the interface
- *  Also contains function for reserve search
+ *  Object that contain class, school and component list to dynamically create the interface
  */
 object Searcher {
   private val allClassArray = getArrayFromJsonFile("output/class.jsonl")
@@ -32,9 +31,10 @@ object Searcher {
       line.split("\", \"").sorted
 
     } catch {
-      case _:
+      case e:
         // Print error and exit if file not found (required)
         FileNotFoundException => println("Couldn't find required file: " + filename)
+        println(e)
         sys.exit(1)
     }
   }
@@ -46,29 +46,4 @@ object Searcher {
 
   def getNbClass: Int = { allClassArray.length }
   def getNbSchool: Int = { allSchoolArray.length }
-
-
-
-  // Functions declaration for link with reverse search
-
-  def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
-                   componentOperator: String, spellResistance: String, spellName: String, description: Array[String]): DataFrame = {
-
-    return null
-  }
-
-  def getSpellInfo(spellName: String): DataFrame = {
-
-    return null
-  }
-
-  def getCreatureList(spellName: String): DataFrame = {
-
-    return null
-  }
-
-  def getCreatureInfo(creatureName: String): DataFrame = {
-
-    return null
-  }
 }

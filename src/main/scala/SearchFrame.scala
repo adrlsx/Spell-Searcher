@@ -6,7 +6,7 @@ import scala.collection.immutable.TreeMap
 import scala.swing._
 
 // Main frame : spell research by criteria
-class SearchFrame(searcher: Searcher.type) extends MainFrame {
+class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) extends MainFrame {
   // Set Window title
   title = "Spell Searcher"
 
@@ -183,7 +183,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       researchBtn.background = new Color(92, 184, 92)
 
       contents += resetBtn
-      contents += Swing.HStrut(30)
+      contents += Swing.HStrut(50)
       contents += researchBtn
     }
 
@@ -219,13 +219,25 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     val exactSpellName: String = spellNameTextField.text
     val description: Array[String] = getDescription
 
-    searcher.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, exactSpellName, description )
+    sparkRequest.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, exactSpellName, description )
 
-    val jLabel = new JLabel("TEST")
+    val jLabel = new JLabel("SPELL NAME")
+
 
     jLabel.addMouseListener(new MouseAdapter() {
+      // https://stackoverflow.com/questions/2440134/is-this-the-proper-way-to-initialize-null-references-in-scala
+      private var spellDisplay = Option.empty[SpellFrame]
       override def mouseClicked(e: MouseEvent) {
-        new SpellFrame(searcher, jLabel.getText).visible = true
+        // Create the SpellFrame if it has not been created before
+        if (spellDisplay.isEmpty){
+          spellDisplay = Some(new SpellFrame(searcher, sparkRequest, jLabel.getText))
+          spellDisplay.get.centerOnScreen()
+          spellDisplay.get.open()
+        }
+        // elsewhere simply bring the window to the front
+        else{
+          spellDisplay.get.open()
+        }
       }
     })
 
