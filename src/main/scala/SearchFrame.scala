@@ -259,25 +259,25 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
       }
     }
 
-    return stringArray
+    stringArray
   }
 
   def getOperatorFromButton(button: RadioButton): String = {
     // Get selected operator : set operator to OR if selected, else set to AND
     if (button.selected) {
-       return "OR"
+      "OR"
     } else {
-      return "AND"
+      "AND"
     }
   }
 
   def getSpellResistance: String = {
     if (btnSpellResistanceYes.selected) {
-      return "true"
+      "true"
     } else if (btnSpellResistanceNo.selected) {
-      return "false"
+      "false"
     } else {
-      return null
+      null
     }
   }
 
