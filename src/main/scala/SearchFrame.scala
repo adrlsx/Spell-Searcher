@@ -175,12 +175,12 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
     // Add reset and research buttons
     contents += new BoxPanel(Orientation.Horizontal) {
       val resetBtn: Button = Button("Reset") { resetField() }
-      // https://colorswall.com/palette/3/
-      resetBtn.background = new Color(217, 83, 79)
+      // https://flatuicolors.com/palette/defo
+      resetBtn.background = new Color(231, 76, 60)
 
       val researchBtn: Button = Button("Search") { launchResearch() }
-      // https://colorswall.com/palette/3/
-      researchBtn.background = new Color(92, 184, 92)
+      // https://flatuicolors.com/palette/defo
+      researchBtn.background = new Color(46, 204, 113)
 
       contents += resetBtn
       contents += Swing.HStrut(50)
@@ -311,6 +311,7 @@ class SearchFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type) exte
     jPanelResult.repaint()
 
     // Reset result number
+    nbResult = 0
     labelNbResult.text = "Number: 0"
   }
 }
