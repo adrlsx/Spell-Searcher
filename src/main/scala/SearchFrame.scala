@@ -111,7 +111,8 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
       // Add box for class selection
       contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Classes:     ")
+        contents += new Label("Classes:")
+        contents += Swing.HStrut(10)
 
         // Add available classes dynamically
         contents += new GridPanel(nbClassLine, nbGridColumn) {
@@ -127,7 +128,8 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
       // Add box for school selection
       contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("School:      ")
+        contents += new Label("School:")
+        contents += Swing.HStrut(10)
 
         // Add available schools dynamically
         contents += new GridPanel(nbSchoolLine, nbGridColumn) {
@@ -146,7 +148,8 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
       // Add box for component selection
       contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Component:     ")
+        contents += new Label("Component:")
+        contents += Swing.HStrut(10)
 
         // Add available components dynamically
         for (componentName <- searcher.getAllComponentName) {
@@ -165,7 +168,8 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
       // Add box for spell resistance selection
       contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Spell Resistance:      ")
+        contents += new Label("Spell Resistance:")
+        contents += Swing.HStrut(10)
 
         contents += btnSpellResistanceYes
         contents += btnSpellResistanceNo
@@ -177,7 +181,9 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
       // Add box for research by exact spell name
       contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Exact spell Name:      ")
+        contents += new Label("Exact spell Name:")
+        contents += Swing.HStrut(10)
+
         contents += spellNameTextField
         contents += Swing.Glue
       }
@@ -185,7 +191,9 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
       // Add box for research by spell description (full text search)
       contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Description:     ")
+        contents += new Label("Description:")
+        contents += Swing.HStrut(10)
+
         contents += descriptionTextField
         contents += Swing.Glue
       }
