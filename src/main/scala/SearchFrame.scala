@@ -16,7 +16,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
   // var is mutable contrary to val
   private var nbResult: Int = 0
 
-  var sparkRequest: Option[SparkRequest.type] = None
+  private var sparkRequest: Option[SparkRequest.type] = None
 
   // Initialisation for loading bar and user return message
   private val userInfoLabel: Label = new Label {
@@ -220,6 +220,9 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   }
 
+  def setSparkRequest(sparkRequest: SparkRequest.type): Unit = {
+    this.sparkRequest = Some(sparkRequest)
+  }
 
   private def launchResearch(): Unit = {
     val classArray: Array[String] = getArrayFromCheckbox(checkBoxClassMap)

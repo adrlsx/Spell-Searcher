@@ -12,8 +12,8 @@ object Main {
 
     mainUI.disableResearch("Loading Apache Spark")
 
-    // Initialize Apache Spark module and the reverse index
-    mainUI.sparkRequest = Some(SparkRequest)
+    // Initialize Apache Spark module with the reverse index, and pass it to interface
+    mainUI.setSparkRequest(SparkRequest)
 
     mainUI.enableResearch("Waiting for search request")
   }
