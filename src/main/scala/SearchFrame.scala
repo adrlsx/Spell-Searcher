@@ -340,7 +340,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     //val crawler: Int = "python3 src/main/python/main.py".!
 
     if (crawler == 0){
-      enableResearch("Update successful")
+      enableResearch("Update successful ! Waiting for search request")
     }
     else {
       enableResearch("Failed update")
