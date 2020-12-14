@@ -28,6 +28,10 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   val progressBar: ProgressBar = new ProgressBar
 
+  val progressBarGlue: Component = Swing.Glue
+
+  progressBar.visible = false
+
 
   // Initialisation for research by Class
   // Round to upper with (if (searcher.getNbClass % nbGridColumn == 0) 0 else 1)
@@ -104,6 +108,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
         contents += Swing.HStrut(20)
 
+        contents += progressBarGlue
         contents += progressBar
 
         contents += Swing.HStrut(50)
@@ -359,6 +364,9 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     researchBtn.enabled = false
     relaunchScrapyBtn.enabled = false
 
+    progressBar.visible = true
+    progressBarGlue.visible = false
+
     progressBar.indeterminate = true
 
     userInfoLabel.text = msg
@@ -370,7 +378,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
     userInfoLabel.text = msg
 
-    progressBar.indeterminate = false
-    progressBar.value = 100
+    progressBarGlue.visible = true
+    progressBar.visible = false
   }
 }
