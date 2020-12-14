@@ -30,7 +30,7 @@ object SwingGeneralFunc {
 
   def getOperatorBox(btnAnd: RadioButton, btnOr: RadioButton): BoxPanel = {
     new BoxPanel(Orientation.Horizontal) {
-      contents += new Label("Operator: ")
+      contents += new Label("Operator:      ")
       contents += btnAnd
       contents += btnOr
 

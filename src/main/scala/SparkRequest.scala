@@ -1,6 +1,6 @@
-import org.apache.spark.sql.functions.{collect_set, explode}
+import org.apache.spark.sql.functions.{array_contains, collect_set, explode}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{ColumnName, DataFrame, SparkSession}
 
 object SparkRequest {
   //Démarrer Spark
@@ -10,13 +10,16 @@ object SparkRequest {
 
   private val creature_path: String = "output/creature.jsonl"
   private val spell_path: String = "output/spell.jsonl"
-  private val df_creature: DataFrame = load_json(creature_path, multiline = true)
-  private val df_spell: DataFrame = load_json(spell_path, multiline = false)
-  //private val reverse_index: DataFrame = reverseIndex(df_creature)
-  println(df_creature.schema.prettyJson)
-  println(df_spell.schema.prettyJson)
+  private val df_creature: DataFrame = load_json(creature_path)
+  private val df_spell: DataFrame = load_json(spell_path)
+  private val reverse_index: DataFrame = reverseIndex(df_creature)
+  df_creature.printSchema()
+  println()
+  df_spell.printSchema()
+  println()
+  reverse_index.printSchema()
 
-  private def load_json(json_path: String, multiline: Boolean): DataFrame = {
+  private def load_json(json_path: String, multiline: Boolean = true): DataFrame = {
     // JSON: https://spark.apache.org/docs/latest/sql-data-sources-json.html
     // Saves the schema of the first line
     val json_schema: StructType = spark.read.option("multiline", value = multiline).json(json_path).schema
@@ -35,28 +38,38 @@ object SparkRequest {
     reverse_index.groupBy("spells").agg(collect_set("name").as("creatures"))
   }
 
+  def sortRequest(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+    var spell_list: DataFrame = df
+    if (operator == "OR"){
+      spell_list = spell_list.where(spell_list(infoToSort) isin inputArray)
+    }
+    else if (operator == "AND"){
+      for(spellClass <- inputArray){
+        spell_list = spell_list.where(array_contains(spell_list("classes.name"), spellClass))
+      }
+    }
+    spell_list
+  }
+
   def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
                    componentOperator: String, spellResistance: String, spellName: String, description: Array[String]): DataFrame = {
-    var classRequest = ""
-    for(spellClass <- classArray){
-      classRequest += " class = " + spellClass + " " + classOperator
-    }
-
-    return null
+    val classSort: DataFrame = sortRequest(df_spell, "class.name", classArray, classOperator)
+    val schoolSort: DataFrame = sortRequest(classSort, "school", schoolArray, "OR")
+    val componentSort: DataFrame = sortRequest(schoolSort, "components", componentArray, componentOperator)
+    val resistanceSort: DataFrame = componentSort.where(componentSort("spell_resistance") === spellResistance)
+    val nameSort: DataFrame = resistanceSort.where(resistanceSort("name") === spellName)
+    nameSort
   }
 
   def getSpellInfo(spellName: String): DataFrame = {
-
-    return null
+    df_spell.where(df_spell("name") === spellName)
   }
 
   def getCreatureList(spellName: String): DataFrame = {
-
-    return null
+    reverse_index.where(reverse_index("spells") === spellName).select(reverse_index("creatures"))
   }
 
   def getCreatureInfo(creatureName: String): DataFrame = {
-
-    return null
+    df_creature.filter(df_creature("name") === creatureName)
   }
 }
