@@ -21,6 +21,13 @@ object Main {
       val mainUI = new SearchFrame(searcher)
       mainUI.centerOnScreen()
       mainUI.open()
+
+      mainUI.disableResearch("Loading Apache Spark")
+
+      // Initialize Apache Spark module and the reverse index
+      mainUI.sparkRequest = Some(SparkRequest)
+
+      mainUI.enableResearch("Waiting for search request")
     }
     else {
       println("There was an error with the python crawler.\nExit code: " + crawler)

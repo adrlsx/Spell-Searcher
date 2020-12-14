@@ -18,6 +18,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
   // var is mutable contrary to val
   var nbResult: Int = 0
 
+  var sparkRequest: Option[SparkRequest.type] = None
 
   // Initialisation for loading bar and user return message
   val userInfoLabel: Label = new Label {
@@ -91,8 +92,6 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
 
   initInterface()
-  initSpark()
-
 
 
   def initInterface(): Unit = {
@@ -247,15 +246,6 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   }
 
-  def initSpark(): Unit = {
-    disableResearch("Loading Apache Spark")
-
-    // Initialize Apache Spark module and the reverse index
-    val sparkRequest: SparkRequest.type = SparkRequest
-
-    enableResearch()
-  }
-
 
   def launchResearch(): Unit = {
     val classArray: Array[String] = getArrayFromCheckbox(checkBoxClassMap)
@@ -269,7 +259,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     val exactSpellName: String = spellNameTextField.text
     val description: Array[String] = getDescription
 
-    //sparkRequest.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, exactSpellName, description )
+    sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, exactSpellName, description )
 
     val jLabel = new JLabel("SPELL NAME")
 
@@ -281,7 +271,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
-          //spellDisplay = Some(new SpellFrame(searcher, sparkRequest, jLabel.getText))
+          spellDisplay = Some(new SpellFrame(searcher, sparkRequest.get, jLabel.getText))
           spellDisplay.get.centerOnScreen()
           spellDisplay.get.open()
         }
@@ -374,10 +364,13 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     userInfoLabel.text = msg
   }
 
-  def enableResearch(): Unit = {
+  def enableResearch(msg: String): Unit = {
     researchBtn.enabled = true
     relaunchScrapyBtn.enabled = true
 
+    userInfoLabel.text = msg
+
+    progressBar.indeterminate = false
     progressBar.value = 100
   }
 }
