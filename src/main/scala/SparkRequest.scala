@@ -1,6 +1,6 @@
 import org.apache.spark.sql.functions.{array_contains, collect_set, explode}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{ColumnName, DataFrame, SparkSession}
+import org.apache.spark.sql.{ColumnName, DataFrame, Row, SparkSession}
 
 object SparkRequest {
   //Démarrer Spark
@@ -13,11 +13,6 @@ object SparkRequest {
   private val df_creature: DataFrame = load_json(creature_path)
   private val df_spell: DataFrame = load_json(spell_path)
   private val reverse_index: DataFrame = reverseIndex(df_creature)
-  df_creature.printSchema()
-  println()
-  df_spell.printSchema()
-  println()
-  reverse_index.printSchema()
 
   private def load_json(json_path: String, multiline: Boolean = true): DataFrame = {
     // JSON: https://spark.apache.org/docs/latest/sql-data-sources-json.html
@@ -39,28 +34,60 @@ object SparkRequest {
   }
 
   def sortRequest(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
-    var spell_list: DataFrame = df
+    df
+  }
+
+  def sortComponent(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+    var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
     if (operator == "OR"){
-      spell_list = spell_list.where(spell_list(infoToSort) isin inputArray)
+      for(value <- inputArray){
+        val selection = df.where(array_contains(df(infoToSort), value))
+        spell_list = spell_list.union(selection)
+      }
     }
     else if (operator == "AND"){
-      for(spellClass <- inputArray){
-        spell_list = spell_list.where(array_contains(spell_list("classes.name"), spellClass))
+      for(value <- inputArray){
+        val selection = df.where(array_contains(df(infoToSort), value))
+        spell_list = spell_list.intersect(selection)
+      }
+    }
+    spell_list
+  }
+
+  def sortSchool(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+    var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
+    if (operator == "OR"){
+      for(value <- inputArray){
+        val selection = df.where(df(infoToSort) === value)
+        spell_list = spell_list.union(selection)
+      }
+    }
+    else if (operator == "AND"){
+      for(value <- inputArray){
+        val selection = df.where(df(infoToSort) === value)
+        spell_list = spell_list.intersect(selection)
       }
     }
     spell_list
   }
 
   def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
-                   componentOperator: String, spellResistance: String, spellName: String, description: Array[String]): DataFrame = {
-
-    val classSort: DataFrame = sortRequest(df_spell, "class.name", classArray, classOperator)
-    val schoolSort: DataFrame = sortRequest(classSort, "school", schoolArray, "OR")
-    val componentSort: DataFrame = sortRequest(schoolSort, "components", componentArray, componentOperator)
-    val resistanceSort: DataFrame = componentSort.where(componentSort("spell_resistance") === spellResistance)
-    val nameSort: DataFrame = resistanceSort.where(resistanceSort("name") === spellName)
-
-    nameSort
+                   componentOperator: String, spellResistance: String, description: Array[String]): Array[String] = {
+    var df_sort: DataFrame = df_spell
+    if (classArray.nonEmpty){
+      //df_sort = sortRequest(df_sort, "classes.name", classArray, classOperator)
+    }
+    if (schoolArray.nonEmpty){
+      df_sort = sortSchool(df_sort, "school", schoolArray, "OR")
+    }
+    if (componentArray.nonEmpty){
+      df_sort = sortComponent(df_sort, "components", componentArray, componentOperator)
+    }
+    if (spellResistance.nonEmpty){
+      df_sort = df_sort.where(df_sort("spell_resistance") === spellResistance)
+    }
+    val name_list = df_sort.select(df_sort("name"))
+    name_list.collect().map(row => row.toString())
   }
 
   def getSpellInfo(spellName: String): DataFrame = {

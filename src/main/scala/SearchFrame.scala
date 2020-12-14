@@ -1,5 +1,6 @@
 import sys.process._
 import SwingGeneralFunc.{addSeparator, getOperatorBox}
+import org.apache.spark.sql.DataFrame
 
 import java.awt.event.{MouseAdapter, MouseEvent}
 import javax.swing.{BoxLayout, JLabel, JPanel, JScrollPane}
@@ -55,9 +56,6 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
   private val btnSpellResistanceNotCheck = new RadioButton("Not checked")
   btnSpellResistanceNotCheck.selected = true
   new ButtonGroup(btnSpellResistanceYes, btnSpellResistanceNo, btnSpellResistanceNotCheck)
-
-  // Initialisation for research by Spell Name
-  private val spellNameTextField = new TextField()
 
   // Initialisation for research by Description
   private val descriptionTextField = new TextField()
@@ -179,16 +177,6 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       }
 
       addSeparator(contents)
-      // Add box for research by exact spell name
-      contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Exact spell Name:")
-        contents += Swing.HStrut(10)
-
-        contents += spellNameTextField
-        contents += Swing.Glue
-      }
-
-      addSeparator(contents)
       // Add box for research by spell description (full text search)
       contents += new BoxPanel(Orientation.Horizontal) {
         contents += new Label("Description:")
@@ -233,6 +221,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
   }
 
   private def launchResearch(): Unit = {
+    disableResearch("Processing request")
     val classArray: Array[String] = getArrayFromCheckbox(checkBoxClassMap)
     val schoolArray: Array[String] = getArrayFromCheckbox(checkBoxSchoolMap)
     val componentArray: Array[String] = getArrayFromCheckbox(checkBoxComponentMap)
@@ -241,12 +230,21 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     val componentOperator: String = getOperatorFromButton(btnComponentOr)
     val spellResistance: String = getSpellResistance
 
-    val exactSpellName: String = spellNameTextField.text
     val description: Array[String] = getDescription
 
-    sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, exactSpellName, description )
+    // Reset result field to only display new results
+    resetResult()
 
-    val jLabel = new JLabel("SPELL NAME")
+    //val spellInfo: Array[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
+    val spellInfo: Array[String] = Array[String]("first", "second")
+    for (spellName <- spellInfo){
+        addSpell(spellName)
+    }
+    enableResearch("Request successful ! Waiting for search request")
+  }
+
+  private def addSpell(spellName: String): Unit = {
+    val jLabel = new JLabel(spellName)
 
     jLabel.addMouseListener(new MouseAdapter() {
       // https://stackoverflow.com/questions/2440134/is-this-the-proper-way-to-initialize-null-references-in-scala
@@ -255,7 +253,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
-          spellDisplay = Some(new SpellFrame(searcher, sparkRequest.get, jLabel.getText))
+          spellDisplay = Some(new SpellFrame(searcher, sparkRequest.get, spellName))
           spellDisplay.get.centerOnScreen()
           spellDisplay.get.open()
         }
@@ -287,7 +285,8 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     // Get selected operator : set operator to OR if selected, else set to AND
     if (button.selected) {
       "OR"
-    } else {
+    }
+    else {
       "AND"
     }
   }
@@ -295,9 +294,11 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
   private def getSpellResistance: String = {
     if (btnSpellResistanceYes.selected) {
       true.toString
-    } else if (btnSpellResistanceNo.selected) {
+    }
+    else if (btnSpellResistanceNo.selected) {
       false.toString
-    } else {
+    }
+    else {
       ""
     }
   }
@@ -328,18 +329,21 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     // Set spell resistance not checked
     btnSpellResistanceNotCheck.selected = true
 
-    // Reset spell name and description text fields
-    spellNameTextField.text = ""
+    // Reset description text fields
     descriptionTextField.text = ""
 
-    // Remove all spells result
-    jPanelResult.removeAll()
-    jPanelResult.revalidate()
-    jPanelResult.repaint()
+    resetResult()
 
     // Reset result number
     nbResult = 0
     labelNbResult.text = "Number: 0"
+  }
+
+  private def resetResult(): Unit = {
+    // Remove all spells result
+    jPanelResult.removeAll()
+    jPanelResult.revalidate()
+    jPanelResult.repaint()
   }
 
   def updateDatabase(): Unit = {

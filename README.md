@@ -23,7 +23,7 @@ You can also refer to the documentation: [Apache Spark Installation](https://spa
 ## Built With
 * [Scala 2.12.12](https://www.scala-lang.org/) - Scala is a general-purpose programming language providing support for both object-oriented programming and functional programming.
 * [Oracle OpenJDK 11.0.9](https://openjdk.java.net/) - OpenJDK (Open Java Development Kit) is a free and open-source implementation of the Java Platform Standard Edition (Java SE).
-* [sbt 1.4.4](https://www.scala-sbt.org/) - sbt is a build tool for Scala, Java, and more. It requires Java 1.8 or later.
+* [sbt 1.4.5](https://www.scala-sbt.org/) - sbt is a build tool for Scala, Java, and more. It requires Java 1.8 or later.
 * [Apache Spark™ 3.0.1](https://spark.apache.org/) - Apache Spark is an open-source distributed general-purpose cluster-computing framework.
 * [scala-swing 3.0.0](https://github.com/scala/scala-swing) - scala-wing is a UI library that wraps most of Java Swing for Scala in a straightforward manner. The widget class hierarchy loosely resembles that of Java Swing.
 * [FlatLaf 0.45](https://github.com/JFormDesigner/FlatLaf) - FlatLaf is a modern open-source cross-platform Look and Feel for Java Swing desktop applications.
