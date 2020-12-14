@@ -53,11 +53,13 @@ object SparkRequest {
 
   def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
                    componentOperator: String, spellResistance: String, spellName: String, description: Array[String]): DataFrame = {
+
     val classSort: DataFrame = sortRequest(df_spell, "class.name", classArray, classOperator)
     val schoolSort: DataFrame = sortRequest(classSort, "school", schoolArray, "OR")
     val componentSort: DataFrame = sortRequest(schoolSort, "components", componentArray, componentOperator)
     val resistanceSort: DataFrame = componentSort.where(componentSort("spell_resistance") === spellResistance)
     val nameSort: DataFrame = resistanceSort.where(resistanceSort("name") === spellName)
+
     nameSort
   }
 
