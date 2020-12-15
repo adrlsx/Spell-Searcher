@@ -46,6 +46,7 @@ object SparkRequest {
       }
     }
     else if (operator == "AND"){
+      spell_list = df
       for(value <- inputArray){
         val selection = df.where(array_contains(df(infoToSort), value))
         spell_list = spell_list.intersect(selection)
@@ -63,6 +64,7 @@ object SparkRequest {
       }
     }
     else if (operator == "AND"){
+      spell_list = df
       for(value <- inputArray){
         val selection = df.where(df(infoToSort) === value)
         spell_list = spell_list.intersect(selection)
@@ -87,7 +89,7 @@ object SparkRequest {
       df_sort = df_sort.where(df_sort("spell_resistance") === spellResistance)
     }
     val name_list = df_sort.select(df_sort("name"))
-    name_list.collect().map(row => row.toString())
+    name_list.collect().map(row => row.toString().stripPrefix("[").stripSuffix("]"))
   }
 
   def getSpellInfo(spellName: String): DataFrame = {

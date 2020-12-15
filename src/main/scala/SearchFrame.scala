@@ -235,8 +235,8 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     // Reset result field to only display new results
     resetResult()
 
-    //val spellInfo: Array[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
-    val spellInfo: Array[String] = Array[String]("first", "second")
+    val spellInfo: Array[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
+    //val spellInfo: Array[String] = Array[String]("first", "second")
     for (spellName <- spellInfo){
         addSpell(spellName)
     }
@@ -333,10 +333,6 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     descriptionTextField.text = ""
 
     resetResult()
-
-    // Reset result number
-    nbResult = 0
-    labelNbResult.text = "Number: 0"
   }
 
   private def resetResult(): Unit = {
@@ -344,6 +340,9 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     jPanelResult.removeAll()
     jPanelResult.revalidate()
     jPanelResult.repaint()
+    // Reset result number
+    nbResult = 0
+    labelNbResult.text = "Number: 0"
   }
 
   def updateDatabase(): Unit = {
