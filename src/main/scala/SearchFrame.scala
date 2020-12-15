@@ -278,7 +278,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
-          spellDisplay = Some(new SpellFrame(searcher, sparkRequest.get, spellName))
+          spellDisplay = Some(new SpellFrame(sparkRequest.get, spellName))
           spellDisplay.get.centerOnScreen()
           spellDisplay.get.open()
         }

@@ -1,15 +1,13 @@
 import SwingGeneralFunc.{addSeparator, getHorizontalBox, getWebsiteBtnBox}
-import org.apache.spark.sql.{Column, DataFrame, Row}
+import org.apache.spark.sql.DataFrame
 
 import java.awt.{Desktop, Image}
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.net.URI
 import javax.swing._
-import javax.swing.text.html.StyleSheet.BoxPainter
-import scala.swing
 import scala.swing._
 
-class SpellFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type, spellName: String) extends Frame {
+class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Frame {
 
   val spellInfo: DataFrame = sparkRequest.getSpellInfo(spellName)
   val creatureList: DataFrame = sparkRequest.getCreatureList(spellName)
