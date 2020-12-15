@@ -1,5 +1,3 @@
-import org.apache.spark.sql.DataFrame
-
 import java.io.FileNotFoundException
 import scala.io.Source
 
