@@ -39,55 +39,62 @@ object SparkRequest {
 
   def sortComponent(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
-    if (operator == "OR"){
-      for(value <- inputArray){
+
+    if (operator == "OR") {
+      for(value <- inputArray) {
         val selection = df.where(array_contains(df(infoToSort), value))
         spell_list = spell_list.union(selection)
       }
     }
-    else if (operator == "AND"){
+    else if (operator == "AND") {
       spell_list = df
-      for(value <- inputArray){
+      for(value <- inputArray) {
         val selection = df.where(array_contains(df(infoToSort), value))
         spell_list = spell_list.intersect(selection)
       }
     }
+
     spell_list
   }
 
   def sortSchool(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
-    if (operator == "OR"){
-      for(value <- inputArray){
+    if (operator == "OR") {
+      for(value <- inputArray) {
         val selection = df.where(df(infoToSort) === value)
         spell_list = spell_list.union(selection)
       }
     }
-    else if (operator == "AND"){
+    else if (operator == "AND") {
       spell_list = df
-      for(value <- inputArray){
+      for(value <- inputArray) {
         val selection = df.where(df(infoToSort) === value)
         spell_list = spell_list.intersect(selection)
       }
     }
+
     spell_list
   }
 
   def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
                    componentOperator: String, spellResistance: String, description: Array[String]): Array[String] = {
     var df_sort: DataFrame = df_spell
-    if (classArray.nonEmpty){
+    if (classArray.nonEmpty) {
       //df_sort = sortRequest(df_sort, "classes.name", classArray, classOperator)
     }
-    if (schoolArray.nonEmpty){
+
+    if (schoolArray.nonEmpty) {
       df_sort = sortSchool(df_sort, "school", schoolArray, "OR")
     }
-    if (componentArray.nonEmpty){
+
+    if (componentArray.nonEmpty) {
       df_sort = sortComponent(df_sort, "components", componentArray, componentOperator)
     }
-    if (spellResistance.nonEmpty){
+
+    if (spellResistance.nonEmpty) {
       df_sort = df_sort.where(df_sort("spell_resistance") === spellResistance)
     }
+
     val name_list = df_sort.select(df_sort("name"))
     name_list.collect().map(row => row.toString().stripPrefix("[").stripSuffix("]"))
   }

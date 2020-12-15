@@ -244,6 +244,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
         val spellInfo: Array[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
         spellInfo
       }
+
       override protected def done(): Unit = {
         val spellInfo: Array[String] = get()
         for (spellName <- spellInfo){
@@ -353,6 +354,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     jPanelResult.removeAll()
     jPanelResult.revalidate()
     jPanelResult.repaint()
+
     // Reset result number
     nbResult = 0
     labelNbResult.text = "Number: 0"
@@ -372,6 +374,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
         val crawler: Int = "python3 src/main/python/main.py".!
         crawler
       }
+
       override protected def done(): Unit = {
         val crawler: Int = get()
         if (crawler == 0){
