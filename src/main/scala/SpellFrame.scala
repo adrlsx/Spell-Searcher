@@ -1,4 +1,5 @@
 import SwingGeneralFunc.{addSeparator, getHorizontalBox, getWebsiteBtnBox}
+import org.apache.spark.sql.{Column, DataFrame, Row}
 
 import java.awt.Image
 import java.awt.event.{MouseAdapter, MouseEvent}
@@ -7,8 +8,22 @@ import scala.swing._
 
 class SpellFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type, spellName: String) extends Frame {
 
-  sparkRequest.getSpellInfo(spellName)
-  sparkRequest.getCreatureList(spellName)
+  val spellInfo: DataFrame = sparkRequest.getSpellInfo(spellName)
+  val creatureList: DataFrame = sparkRequest.getCreatureList(spellName)
+
+  spellInfo.show()
+
+  println(getStringFromDataFrame(spellInfo, "classes"))
+  println(getStringFromDataFrame(spellInfo, "components"))
+  println(getStringFromDataFrame(spellInfo, "school"))
+  println(getStringFromDataFrame(spellInfo, "spell_resistance"))
+  println(getStringFromDataFrame(spellInfo, "url"))
+
+
+  def getStringFromDataFrame(dataFrame: DataFrame, column: String): String = {
+    dataFrame.select(column).first().toString().replaceAll("\\[", "").replaceAll("]", "")
+  }
+
 
   val spellUrl: String = "https://aonprd.com/SpellDisplay.aspx?ItemName=Ablative%20Barrier"
   val spellSchool: String = "Conjuration"
@@ -55,6 +70,9 @@ class SpellFrame(searcher: Searcher.type, sparkRequest: SparkRequest.type, spell
 
         val jScrollPaneResult = new JScrollPane(jPanelResult)
         jScrollPaneResult.setPreferredSize(new Dimension(300, 583))
+
+        // https://stackoverflow.com/questions/5583495/how-do-i-speed-up-the-scroll-speed-in-a-jscrollpane-when-using-the-mouse-wheel
+        jScrollPaneResult.getVerticalScrollBar.setUnitIncrement(16)
 
         // Use Component.wrap() for link between javax.swing and scala.swing
         contents += Component.wrap(jScrollPaneResult)
