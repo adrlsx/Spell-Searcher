@@ -8,7 +8,7 @@ import java.awt.Font.ITALIC
 import scala.collection.mutable
 
 // Main frame : spell research by criteria
-class SearchFrame(searcher: Searcher.type) extends MainFrame {
+class SearchFrame extends MainFrame {
   // Set Window title
   title = "Spell Searcher"
 
@@ -137,7 +137,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
 
       // Add box for class selection
-      contents += getGridBox("Class", checkBoxClassMap, searcher.getAllClassName)
+      contents += getGridBox("Class", checkBoxClassMap, Searcher.getAllClassName)
 
       // Add box for class operator selection (AND or OR)
       contents += getOperatorBox(btnClassAnd, btnClassOr)
@@ -145,7 +145,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       addSeparator(contents)
 
       // Add box for school selection
-      contents += getGridBox("School", checkBoxClassMap, searcher.getAllSchoolName)
+      contents += getGridBox("School", checkBoxClassMap, Searcher.getAllSchoolName)
 
       // Add box description for school selection
       contents += new BoxPanel(Orientation.Horizontal) {
@@ -161,7 +161,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
         contents += Swing.HStrut(10)
 
         // Add available components dynamically
-        for (componentName <- searcher.getAllComponentName) {
+        for (componentName <- Searcher.getAllComponentName) {
           checkBoxComponentMap += (componentName -> new CheckBox(componentName))
           contents += checkBoxComponentMap(componentName)
 

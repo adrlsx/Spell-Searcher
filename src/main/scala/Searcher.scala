@@ -41,7 +41,4 @@ object Searcher {
   def getAllClassName: Array[String] = { allClassArray }
   def getAllSchoolName: Array[String] = { allSchoolArray }
   def getAllComponentName: Array[String] = { allComponentArray }
-
-  def getNbClass: Int = { allClassArray.length }
-  def getNbSchool: Int = { allSchoolArray.length }
 }

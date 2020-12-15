@@ -3,10 +3,8 @@ import com.formdev.flatlaf.FlatIntelliJLaf
 object Main {
   def main(args: Array[String]) {
     FlatIntelliJLaf.install()
-    // Initialize the dynamic elements necessary for the construction of the main window
-    val searcher = Searcher
 
-    val mainUI = new SearchFrame(searcher)
+    val mainUI = new SearchFrame
     mainUI.centerOnScreen()
     mainUI.open()
 
