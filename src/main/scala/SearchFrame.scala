@@ -1,9 +1,8 @@
 import sys.process._
 import SwingGeneralFunc.{addSeparator, getOperatorBox}
-import org.apache.spark.sql.DataFrame
 
 import java.awt.event.{MouseAdapter, MouseEvent}
-import javax.swing.{BoxLayout, JLabel, JPanel, JScrollPane}
+import javax.swing.{BoxLayout, JLabel, JPanel, JScrollPane, SwingWorker}
 import scala.collection.immutable.TreeMap
 import scala.swing._
 import java.awt.Font.ITALIC
@@ -208,6 +207,8 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
       private val jScrollPaneResult = new JScrollPane(jPanelResult)
       jScrollPaneResult.setPreferredSize(new Dimension(0, 180))
+      // https://stackoverflow.com/questions/5583495/how-do-i-speed-up-the-scroll-speed-in-a-jscrollpane-when-using-the-mouse-wheel
+      jScrollPaneResult.getVerticalScrollBar.setUnitIncrement(16)
 
       // Use Component.wrap() for link between javax.swing and scala.swing
       // Add scroll pane for spell results
@@ -222,6 +223,9 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   private def launchResearch(): Unit = {
     disableResearch("Processing request")
+    // Reset result field to only display new results
+    resetResult()
+
     val classArray: Array[String] = getArrayFromCheckbox(checkBoxClassMap)
     val schoolArray: Array[String] = getArrayFromCheckbox(checkBoxSchoolMap)
     val componentArray: Array[String] = getArrayFromCheckbox(checkBoxComponentMap)
@@ -232,15 +236,24 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
     val description: Array[String] = getDescription
 
-    // Reset result field to only display new results
-    resetResult()
-
-    val spellInfo: Array[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
-    //val spellInfo: Array[String] = Array[String]("first", "second")
-    for (spellName <- spellInfo){
-        addSpell(spellName)
+    // SwingWorker to perform long process in background thread in order not to freeze the UI
+    // https://www.geeksforgeeks.org/swingworker-in-java/
+    // https://docs.oracle.com/javase/6/docs/api/javax/swing/SwingWorker.html
+    val worker = new SwingWorker[Array[String], Array[String]] {
+      override protected def doInBackground(): Array[String] = {
+        val spellInfo: Array[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
+        spellInfo
+      }
+      override protected def done(): Unit = {
+        val spellInfo: Array[String] = get()
+        for (spellName <- spellInfo){
+          addSpell(spellName)
+        }
+        enableResearch("Request successful ! Waiting for search request")
+      }
     }
-    enableResearch("Request successful ! Waiting for search request")
+
+    worker.execute()
   }
 
   private def addSpell(spellName: String): Unit = {
@@ -347,19 +360,31 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   def updateDatabase(): Unit = {
     disableResearch("Updating Database")
-    println("Loading spell and creature data from https://www.aonprd.com/")
-    // Execute python crawler
-    // External command: https://alvinalexander.com/scala/scala-execute-exec-external-system-commands-in-scala/
-    val crawler: Int = 0
-    //val crawler: Int = "python3 src/main/python/main.py".!
 
-    if (crawler == 0){
-      enableResearch("Update successful ! Waiting for search request")
+    // SwingWorker to perform long process in background thread in order not to freeze the UI
+    // https://www.geeksforgeeks.org/swingworker-in-java/
+    // https://docs.oracle.com/javase/6/docs/api/javax/swing/SwingWorker.html
+    val worker = new SwingWorker[Int, Int] {
+      override protected def doInBackground(): Int = {
+        println("Loading spell and creature data from https://www.aonprd.com/")
+        // Execute python crawler
+        // External command: https://alvinalexander.com/scala/scala-execute-exec-external-system-commands-in-scala/
+        val crawler: Int = "python3 src/main/python/main.py".!
+        crawler
+      }
+      override protected def done(): Unit = {
+        val crawler: Int = get()
+        if (crawler == 0){
+          enableResearch("Update successful ! Waiting for search request")
+        }
+        else {
+          enableResearch("Failed update")
+          println("There was an error with the python crawler.\nExit code: " + crawler)
+        }
+      }
     }
-    else {
-      enableResearch("Failed update")
-      println("There was an error with the python crawler.\nExit code: " + crawler)
-    }
+
+    worker.execute()
   }
 
   def disableResearch(msg: String): Unit = {
