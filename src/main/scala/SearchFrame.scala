@@ -1,27 +1,24 @@
 import sys.process._
-import SwingGeneralFunc.{addSeparator, getOperatorBox}
+import SwingGeneralFunc.{addSeparator, getGridBox, getOperatorBox}
 
 import java.awt.event.{MouseAdapter, MouseEvent}
 import javax.swing.{BoxLayout, JLabel, JPanel, JScrollPane, SwingWorker}
-import scala.collection.immutable.TreeMap
 import scala.swing._
 import java.awt.Font.ITALIC
+import scala.collection.mutable
 
 // Main frame : spell research by criteria
 class SearchFrame(searcher: Searcher.type) extends MainFrame {
   // Set Window title
   title = "Spell Searcher"
 
-  private val nbGridColumn: Int = 7
   // var is mutable contrary to val
   private var nbResult: Int = 0
 
   private var sparkRequest: Option[SparkRequest.type] = None
 
   // Initialisation for loading bar and user return message
-  private val userInfoLabel: Label = new Label {
-    text = "Waiting for search request"
-  }
+  private val userInfoLabel: Label = new Label("Waiting for search request")
   userInfoLabel.font = new Font(userInfoLabel.font.getName, ITALIC, userInfoLabel.font.getSize)
 
   private val progressBar: ProgressBar = new ProgressBar
@@ -30,8 +27,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   // Initialisation for research by Class
   // Round to upper with (if (searcher.getNbClass % nbGridColumn == 0) 0 else 1)
-  private val nbClassLine: Int = searcher.getNbClass/nbGridColumn + (if (searcher.getNbClass % nbGridColumn == 0) 0 else 1)
-  private var checkBoxClassMap: TreeMap[String, CheckBox] = new TreeMap()
+  private val checkBoxClassMap: mutable.TreeMap[String, CheckBox] = new mutable.TreeMap()
 
   private val btnClassAnd = new RadioButton("AND")
   private val btnClassOr = new RadioButton("OR")
@@ -39,11 +35,10 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
   new ButtonGroup(btnClassAnd, btnClassOr)
 
   // Initialisation for research by School
-  private val nbSchoolLine: Int = searcher.getNbSchool/nbGridColumn + (if (searcher.getNbSchool % nbGridColumn == 0) 0 else 1)
-  private var checkBoxSchoolMap: TreeMap[String, CheckBox] = new TreeMap()
+  private val checkBoxSchoolMap: mutable.TreeMap[String, CheckBox] = new mutable.TreeMap()
 
   // Initialisation for research by Component
-  private var checkBoxComponentMap: TreeMap[String, CheckBox] = new TreeMap()
+  private var checkBoxComponentMap: mutable.TreeMap[String, CheckBox] = new mutable.TreeMap()
   private val btnComponentAnd = new RadioButton("AND")
   private val btnComponentOr = new RadioButton("OR")
   btnComponentAnd.selected = true
@@ -76,10 +71,44 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   initInterface()
 
+  /*
+   *  PUBLIC FUNCTIONS
+   */
+  def setSparkRequest(sparkRequest: SparkRequest.type): Unit = {
+    this.sparkRequest = Some(sparkRequest)
+  }
+
+  def disableResearch(msg: String): Unit = {
+    researchBtn.enabled = false
+    relaunchScrapyBtn.enabled = false
+
+    progressBar.visible = true
+    progressBarGlue.visible = false
+
+    progressBar.indeterminate = true
+
+    userInfoLabel.text = msg
+  }
+
+  def enableResearch(msg: String): Unit = {
+    researchBtn.enabled = true
+    relaunchScrapyBtn.enabled = true
+
+    userInfoLabel.text = msg
+
+    progressBarGlue.visible = true
+    progressBar.visible = false
+  }
+
+  /*
+   *  PRIVATE FUNCTIONS
+   */
   private def initInterface(): Unit = {
     contents = new BoxPanel(Orientation.Vertical) {
       // Set frame border margin
       border = Swing.EmptyBorder(10, 10, 10, 10)
+
+      // Add box for loading bar and message
       contents += new BoxPanel(Orientation.Horizontal) {
         contents += userInfoLabel
 
@@ -106,36 +135,18 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       }
 
       addSeparator(contents)
-      // Add box for class selection
-      contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Classes:")
-        contents += Swing.HStrut(10)
 
-        // Add available classes dynamically
-        contents += new GridPanel(nbClassLine, nbGridColumn) {
-          for (className <- searcher.getAllClassName) {
-            checkBoxClassMap += (className -> new CheckBox(className))
-            contents += checkBoxClassMap(className)
-          }
-        }
-      }
+      // Add box for class selection
+      contents += getGridBox("Class", checkBoxClassMap, searcher.getAllClassName)
+
       // Add box for class operator selection (AND or OR)
       contents += getOperatorBox(btnClassAnd, btnClassOr)
 
       addSeparator(contents)
-      // Add box for school selection
-      contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("School:")
-        contents += Swing.HStrut(10)
 
-        // Add available schools dynamically
-        contents += new GridPanel(nbSchoolLine, nbGridColumn) {
-          for (schoolName <- searcher.getAllSchoolName) {
-            checkBoxSchoolMap += (schoolName -> new CheckBox(schoolName))
-            contents += checkBoxSchoolMap(schoolName)
-          }
-        }
-      }
+      // Add box for school selection
+      contents += getGridBox("School", checkBoxClassMap, searcher.getAllSchoolName)
+
       // Add box description for school selection
       contents += new BoxPanel(Orientation.Horizontal) {
         contents += new Label("OR operator is applied, because a spell can only have one school. You will get the spells for each selected school")
@@ -143,6 +154,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       }
 
       addSeparator(contents)
+
       // Add box for component selection
       contents += new BoxPanel(Orientation.Horizontal) {
         contents += new Label("Component:")
@@ -159,10 +171,12 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
         // Takes remaining space
         contents += Swing.Glue
       }
+
       // Add box for component operator selection (AND or OR)
       contents += getOperatorBox(btnComponentAnd, btnComponentOr)
 
       addSeparator(contents)
+
       // Add box for spell resistance selection
       contents += new BoxPanel(Orientation.Horizontal) {
         contents += new Label("Spell Resistance:")
@@ -176,6 +190,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       }
 
       addSeparator(contents)
+
       // Add box for research by spell description (full text search)
       contents += new BoxPanel(Orientation.Horizontal) {
         contents += new Label("Description:")
@@ -214,11 +229,6 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       // Add scroll pane for spell results
       contents += Component.wrap(jScrollPaneResult)
     }
-
-  }
-
-  def setSparkRequest(sparkRequest: SparkRequest.type): Unit = {
-    this.sparkRequest = Some(sparkRequest)
   }
 
   private def launchResearch(): Unit = {
@@ -264,6 +274,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
       // https://stackoverflow.com/questions/2440134/is-this-the-proper-way-to-initialize-null-references-in-scala
       // https://alvinalexander.com/scala/initialize-scala-variables-option-none-some-null-idiom/
       private var spellDisplay = Option.empty[SpellFrame]
+
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
@@ -283,7 +294,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     labelNbResult.text = "Number: " + nbResult
   }
 
-  private def getArrayFromCheckbox(map: TreeMap[String, CheckBox]): Array[String] = {
+  private def getArrayFromCheckbox(map: mutable.TreeMap[String, CheckBox]): Array[String] = {
     var stringArray: Array[String] = Array()
 
     // Get selected checkbox, and put key in Array
@@ -319,6 +330,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
 
   private def getDescription: Array[String] = {
     val tempDesc = descriptionTextField.text.replaceAll("[^a-zA-Z]", " ")
+
     if (tempDesc.isEmpty){
       Array()
     }
@@ -360,7 +372,7 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     labelNbResult.text = "Number: 0"
   }
 
-  def updateDatabase(): Unit = {
+  private def updateDatabase(): Unit = {
     disableResearch("Updating Database")
 
     // SwingWorker to perform long process in background thread in order not to freeze the UI
@@ -388,27 +400,5 @@ class SearchFrame(searcher: Searcher.type) extends MainFrame {
     }
 
     worker.execute()
-  }
-
-  def disableResearch(msg: String): Unit = {
-    researchBtn.enabled = false
-    relaunchScrapyBtn.enabled = false
-
-    progressBar.visible = true
-    progressBarGlue.visible = false
-
-    progressBar.indeterminate = true
-
-    userInfoLabel.text = msg
-  }
-
-  def enableResearch(msg: String): Unit = {
-    researchBtn.enabled = true
-    relaunchScrapyBtn.enabled = true
-
-    userInfoLabel.text = msg
-
-    progressBarGlue.visible = true
-    progressBar.visible = false
   }
 }
