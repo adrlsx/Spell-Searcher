@@ -9,59 +9,51 @@ import scala.swing._
 
 class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Frame {
 
-  val spellInfo: DataFrame = sparkRequest.getSpellInfo(spellName)
-  val creatureList: DataFrame = sparkRequest.getCreatureList(spellName)
-
-  spellInfo.show()
-
-  println(getStringFromDataFrame(spellInfo, "classes"))
-  println(getStringFromDataFrame(spellInfo, "components"))
-  println(getStringFromDataFrame(spellInfo, "school"))
-  println(getStringFromDataFrame(spellInfo, "spell_resistance"))
-  println(getStringFromDataFrame(spellInfo, "url"))
+  private val spellInfo: Map[String, String] = sparkRequest.getSpellInfo(spellName)
+  private val creatureList: DataFrame = sparkRequest.getCreatureList(spellName)
 
 
-  def getStringFromDataFrame(dataFrame: DataFrame, column: String): String = {
-    dataFrame.select(column).first().toString().replaceAll("\\[", "").replaceAll("]", "")
+  private def getStringFromDataFrame(dataFrame: DataFrame, column: String): String = {
+    dataFrame.select(column).first().toString().stripPrefix("[").stripSuffix("]")
   }
 
 
-  val spellUrl: String = "https://aonprd.com/SpellDisplay.aspx?ItemName=Ablative%20Barrier"
-  val spellSchool: String = "Conjuration"
-  val spellClasses: String = "alchemist 2, arcanist 3, bloodrager 2, investigator 2, magus 2, occultist 2, psychic 3, sorcerer 3, summoner 2, summoner (unchained) 3, wizard 3"
-  val spellComponents: String = "V, S, M"
-  val spellResistance: String = "false"
-  val spellImgPath: String = "output/img/ablative barrier.png"
+  private val spellUrl: String = spellInfo("url")
+  private val spellSchool: String = spellInfo("school")
+  private val spellClasses: String = spellInfo("classes")
+  private val spellComponents: String = spellInfo("components")
+  private val spellResistance: String = spellInfo("spell_resistance")
+  private val spellImgPath: String = s"output/img/$spellName.png"
 
   // var is mutable contrary to val
-  var nbResult: Int = 0
+  private var nbResult: Int = 0
 
   // Set Window title
-  title = "Spell: " + spellName
+  title = s"Spell: $spellName"
 
-  var imageIcon: ImageIcon = new ImageIcon(spellImgPath); // load the image to a imageIcon
-  val image: Image = imageIcon.getImage; // transform it
-  val newImg: Image = image.getScaledInstance(409, 583,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+  private var imageIcon: ImageIcon = new ImageIcon(spellImgPath); // load the image to a imageIcon
+  private val image: Image = imageIcon.getImage; // transform it
+  private val newImg: Image = image.getScaledInstance(409, 583,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
   imageIcon = new ImageIcon(newImg);  // transform it back
 
   // Initialisation for results
-  val labelNbResult = new Label("Number: " + nbResult)
-  val jPanelResult = new JPanel()
+  private val labelNbResult = new Label(s"Number: $nbResult")
+  private val jPanelResult = new JPanel()
   jPanelResult.setLayout(new BoxLayout(jPanelResult, BoxLayout.Y_AXIS))
 
   // initialisation for creature frame
-  val creatureNameLabel: Label = new Label()
-  val creatureSpellLabel: Label = new Label()
+  private val creatureNameLabel: Label = new Label()
+  private val creatureSpellLabel: Label = new Label()
 
-  val creatureWebSiteBtn: Button = Button("") {}
+  private val creatureWebSiteBtn: Button = Button("") {}
   creatureWebSiteBtn.background = new Color(52, 152, 219)
 
-  val descriptionTextArea = new JTextArea()
+  private val descriptionTextArea = new JTextArea()
   descriptionTextArea.setEditable(false)
   descriptionTextArea.setLineWrap(true)
   descriptionTextArea.setWrapStyleWord(true)
 
-  val creatureBoxPanel: BoxPanel = new BoxPanel(Orientation.Horizontal) {
+  private val creatureBoxPanel: BoxPanel = new BoxPanel(Orientation.Horizontal) {
     contents += Swing.HStrut(10)
     contents += Component.wrap(new JSeparator(SwingConstants.VERTICAL))
     contents += Swing.HStrut(10)
@@ -165,17 +157,17 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Fra
     contents += creatureBoxPanel
   }
 
-  def showCreatureFrame(selectedCreatureName: String): Unit = {
+  private def showCreatureFrame(selectedCreatureName: String): Unit = {
     sparkRequest.getCreatureInfo(selectedCreatureName)
 
     creatureNameLabel.text = selectedCreatureName
-    creatureSpellLabel.text = "Spells of " + selectedCreatureName
+    creatureSpellLabel.text = s"Spells of $selectedCreatureName"
 
     creatureWebSiteBtn.action = swing.Action("See creature on Archives of Nethys") {
-      Desktop.getDesktop.browse(new URI("https://aonprd.com/MonsterDisplay.aspx?ItemName=" + selectedCreatureName))
+      Desktop.getDesktop.browse(new URI(s"https://aonprd.com/MonsterDisplay.aspx?ItemName=$selectedCreatureName"))
     }
 
-    descriptionTextArea.setText("Long description qui ne tient pas sur une seule ligne sinon c'est pas drôle de " + selectedCreatureName)
+    descriptionTextArea.setText(s"Long description qui ne tient pas sur une seule ligne sinon c'est pas drôle de $selectedCreatureName")
 
     creatureBoxPanel.visible = true
 
@@ -186,9 +178,9 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Fra
 
   addCreatureResult()
 
-  def addCreatureResult(): Unit = {
+  private def addCreatureResult(): Unit = {
     for (i <- 0 until 50) {
-      val jLabel = new JLabel("TEST" + i)
+      val jLabel = new JLabel(s"TEST$i")
 
       jLabel.addMouseListener(new MouseAdapter() {
         override def mouseClicked(e: MouseEvent) {
@@ -201,6 +193,6 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Fra
       nbResult += 1
     }
 
-    labelNbResult.text = "Number: " + nbResult
+    labelNbResult.text = s"Number: $nbResult"
   }
 }

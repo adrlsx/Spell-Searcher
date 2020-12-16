@@ -67,7 +67,7 @@ class SearchFrame extends MainFrame {
   // Initialisation for results
   private val jPanelResult = new JPanel()
   jPanelResult.setLayout(new BoxLayout(jPanelResult, BoxLayout.Y_AXIS))
-  private val labelNbResult = new Label("Number: " + nbResult)
+  private val labelNbResult = new Label(s"Number: $nbResult")
 
   initInterface()
 
@@ -291,7 +291,7 @@ class SearchFrame extends MainFrame {
     jPanelResult.add(jLabel).revalidate()
 
     nbResult += 1
-    labelNbResult.text = "Number: " + nbResult
+    labelNbResult.text = s"Number: $nbResult"
   }
 
   private def getArrayFromCheckbox(map: mutable.TreeMap[String, CheckBox]): Array[String] = {
@@ -369,7 +369,7 @@ class SearchFrame extends MainFrame {
 
     // Reset result number
     nbResult = 0
-    labelNbResult.text = "Number: 0"
+    labelNbResult.text = s"Number: $nbResult"
   }
 
   private def updateDatabase(): Unit = {
@@ -394,7 +394,7 @@ class SearchFrame extends MainFrame {
         }
         else {
           enableResearch("Failed update")
-          println("There was an error with the python crawler.\nExit code: " + crawler)
+          println(s"There was an error with the python crawler.\nExit code: $crawler")
         }
       }
     }
