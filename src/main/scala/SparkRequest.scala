@@ -4,7 +4,7 @@ import org.apache.spark.sql.{ColumnName, DataFrame, Dataset, Row, SparkSession}
 
 object SparkRequest {
   //Démarrer Spark
-  private val spark: SparkSession = SparkSession.builder.appName("Advanced Spell Search").master("local[4]").getOrCreate()
+  private val spark: SparkSession = SparkSession.builder.appName("Advanced Spell Search").master("local[*]").getOrCreate()
   private val sc: spark.sparkContext.type = spark.sparkContext
   sc.setLogLevel("WARN")
   // Primitive types (Int, String, etc) and Product types (case classes) encoders are
@@ -32,6 +32,22 @@ object SparkRequest {
     // collect_set: https://stackoverflow.com/questions/43357727/how-to-do-opposite-of-explode-in-pyspark
     reverse_index.groupBy("spells").agg(collect_set("name").as("creatures"))
   }
+
+  private def dfToMap(df: DataFrame): Map[String, String] = {
+    var infoMap: Map[String, String] = Map()
+    for(key <- df.columns){
+      val value: String = df.select(key).first().toString().replaceAll("\\[", "").replaceAll("]", "")
+      infoMap += (key -> value)
+    }
+    infoMap
+  }
+
+  private def dfToArray(df: DataFrame, columnName: ColumnName): Array[String] = {
+    val infoArray = df.select(columnName).map(row => row.toString().stripPrefix("[").stripSuffix("]"))
+    infoArray.collect()
+  }
+
+  private def sanitize(string: String): String = string.toLowerCase.capitalize
 
   def sortComponent(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
@@ -78,39 +94,30 @@ object SparkRequest {
     if (classArray.nonEmpty) {
       //df_sort = sortRequest(df_sort, "classes.name", classArray, classOperator)
     }
-
     if (schoolArray.nonEmpty) {
       df_sort = sortSchool(df_sort, "school", schoolArray, "OR")
     }
-
     if (componentArray.nonEmpty) {
       df_sort = sortComponent(df_sort, "components", componentArray, componentOperator)
     }
-
     if (spellResistance.nonEmpty) {
       df_sort = df_sort.where($"spell_resistance" === spellResistance)
     }
-
-    val name_list = df_sort.select($"name")
-    name_list.collect.map(row => row.toString().stripPrefix("[").stripSuffix("]"))
+    dfToArray(df_sort, $"name")
   }
 
   def getSpellInfo(spellName: String): Map[String, String] = {
-    val spellInfo: DataFrame = df_spell.where($"name" === spellName)
-    val first: Dataset[Seq[Any]] = spellInfo.map(row => row.toSeq: Seq[Any])
-    val second: Dataset[Seq[String]] = first.map(row => row.map(v => v.toString: String): Seq[String])
-    val third: Dataset[Map[String, String]] = second.map(row => Map(second.columns.zip(row):_*): Map[String, String])
-    //val infoMap: Dataset[Map[String, String]] = spellInfo.map(row => Map(spellInfo.columns.zip(row.toSeq):_*))
-    //val resultMap = infoMap.first().map(value => (value._1, value._2.toString))
-    //infoMap.first()
-    third.first()
+    val spellInfo: DataFrame = df_spell.where($"name" === sanitize(spellName))
+    dfToMap(spellInfo)
   }
 
-  def getCreatureList(spellName: String): DataFrame = {
-    reverse_index.where($"spells" === spellName).select($"creatures")
+  def getCreatureList(spellName: String): Array[String] = {
+    val df = reverse_index.where($"spells" === sanitize(spellName))
+    dfToArray(df, $"creatures")
   }
 
-  def getCreatureInfo(creatureName: String): DataFrame = {
-    df_creature.filter($"name" === creatureName)
+  def getCreatureInfo(creatureName: String): Map[String, String] = {
+    val creatureInfo = df_creature.filter($"name" === sanitize(creatureName))
+    dfToMap(creatureInfo)
   }
 }

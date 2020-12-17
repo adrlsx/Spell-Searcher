@@ -10,20 +10,14 @@ import scala.swing._
 class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Frame {
 
   private val spellInfo: Map[String, String] = sparkRequest.getSpellInfo(spellName)
-  private val creatureList: DataFrame = sparkRequest.getCreatureList(spellName)
-
-
-  private def getStringFromDataFrame(dataFrame: DataFrame, column: String): String = {
-    dataFrame.select(column).first().toString().stripPrefix("[").stripSuffix("]")
-  }
-
+  private val creatureList: Array[String] = sparkRequest.getCreatureList(spellName)
 
   private val spellUrl: String = spellInfo("url")
   private val spellSchool: String = spellInfo("school")
   private val spellClasses: String = spellInfo("classes")
   private val spellComponents: String = spellInfo("components")
   private val spellResistance: String = spellInfo("spell_resistance")
-  private val spellImgPath: String = s"output/img/$spellName.png"
+  private val spellImgPath: String = s"output/img/${spellName.toLowerCase}.png"
 
   // var is mutable contrary to val
   private var nbResult: Int = 0
@@ -158,29 +152,39 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Fra
   }
 
   private def showCreatureFrame(selectedCreatureName: String): Unit = {
-    sparkRequest.getCreatureInfo(selectedCreatureName)
+    val worker = new SwingWorker[Map[String, String], Map[String, String]] {
+      override protected def doInBackground(): Map[String, String] = {
+        val creatureInfo: Map[String, String] = sparkRequest.getCreatureInfo(selectedCreatureName)
+        creatureInfo
+      }
 
-    creatureNameLabel.text = selectedCreatureName
-    creatureSpellLabel.text = s"Spells of $selectedCreatureName"
+      override protected def done(): Unit = {
+        val creatureInfo: Map[String, String] = get()
+        creatureNameLabel.text = selectedCreatureName
+        creatureSpellLabel.text = creatureInfo("spells")
 
-    creatureWebSiteBtn.action = swing.Action("See creature on Archives of Nethys") {
-      Desktop.getDesktop.browse(new URI(s"https://aonprd.com/MonsterDisplay.aspx?ItemName=$selectedCreatureName"))
+        creatureWebSiteBtn.action = swing.Action("See creature on Archives of Nethys") {
+          Desktop.getDesktop.browse(new URI(creatureInfo("url")))
+        }
+
+        descriptionTextArea.setText(creatureInfo("description"))
+
+        creatureBoxPanel.visible = true
+
+        // Resize window after set creature box visible
+        pack()
+        centerOnScreen()
+      }
     }
 
-    descriptionTextArea.setText(s"Long description qui ne tient pas sur une seule ligne sinon c'est pas drôle de $selectedCreatureName")
-
-    creatureBoxPanel.visible = true
-
-    // Resize window after set creature box visible
-    this.pack()
-    this.centerOnScreen()
+    worker.execute()
   }
 
   addCreatureResult()
 
   private def addCreatureResult(): Unit = {
-    for (i <- 0 until 50) {
-      val jLabel = new JLabel(s"TEST$i")
+    for (creature <- creatureList) {
+      val jLabel = new JLabel(creature)
 
       jLabel.addMouseListener(new MouseAdapter() {
         override def mouseClicked(e: MouseEvent) {
