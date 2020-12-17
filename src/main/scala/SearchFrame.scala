@@ -278,7 +278,7 @@ class SearchFrame extends MainFrame {
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
-          disableResearch(s"Looking informations for spell: $spellName")
+          disableResearch(s"Looking for spell: '$spellName''")
           val worker = new SwingWorker[(Map[String, String], Array[String]), (Map[String, String], Array[String])] {
             override protected def doInBackground(): (Map[String, String], Array[String]) = {
               // Retrieve spell and creature info

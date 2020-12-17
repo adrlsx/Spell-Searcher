@@ -49,7 +49,7 @@ object SparkRequest {
 
   private def sanitize(string: String): String = string.toLowerCase.capitalize
 
-  def sortRequest(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+  private def sortRequest(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
     // Union start with an empty dataframe and will increase its size every time
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
 
@@ -77,7 +77,7 @@ object SparkRequest {
     spell_list
   }
 
-  def sortSchool(df: DataFrame, inputArray: Array[String]) : DataFrame = {
+  private def sortSchool(df: DataFrame, inputArray: Array[String]) : DataFrame = {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
     // Always OR operator as a spell can only have one school
     for(value <- inputArray) {
