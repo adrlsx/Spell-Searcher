@@ -3,7 +3,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{ColumnName, DataFrame, Dataset, Row, SparkSession}
 
 object SparkRequest {
-  //Démarrer Spark
+  // Start Apache Spark
   private val spark: SparkSession = SparkSession.builder.appName("Advanced Spell Search").master("local[*]").getOrCreate()
   private val sc: spark.sparkContext.type = spark.sparkContext
   sc.setLogLevel("WARN")
@@ -49,19 +49,27 @@ object SparkRequest {
 
   private def sanitize(string: String): String = string.toLowerCase.capitalize
 
-  def sortComponent(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+  def sortRequest(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+    // Union start with an empty dataframe and will increase its size every time
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
 
     if (operator == "OR") {
+      // Test every value chosen by the user
       for(value <- inputArray) {
+        // Each row contains a array, so checks the existence of the value for each array
         val selection = df.where(array_contains(df(infoToSort), value))
+        // OR operator is represented as an union of dataframes
         spell_list = spell_list.union(selection)
       }
     }
     else if (operator == "AND") {
+      // Intersections start with a full dataframe and will reduce its size every time
       spell_list = df
+      // Test every value chosen by the user
       for(value <- inputArray) {
+        // Each row contains a array, so checks the existence of the value for each array
         val selection = df.where(array_contains(df(infoToSort), value))
+        // AND operator is represented as an intersection between dataframes
         spell_list = spell_list.intersect(selection)
       }
     }
@@ -69,22 +77,13 @@ object SparkRequest {
     spell_list
   }
 
-  def sortSchool(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+  def sortSchool(df: DataFrame, inputArray: Array[String]) : DataFrame = {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
-    if (operator == "OR") {
-      for(value <- inputArray) {
-        val selection = df.where(df(infoToSort) === value)
-        spell_list = spell_list.union(selection)
-      }
+    // Always OR operator as a spell can only have one school
+    for(value <- inputArray) {
+      val selection = df.where($"school" === value)
+      spell_list = spell_list.union(selection)
     }
-    else if (operator == "AND") {
-      spell_list = df
-      for(value <- inputArray) {
-        val selection = df.where(df(infoToSort) === value)
-        spell_list = spell_list.intersect(selection)
-      }
-    }
-
     spell_list
   }
 
@@ -92,16 +91,20 @@ object SparkRequest {
                    componentOperator: String, spellResistance: String, description: Array[String]): Array[String] = {
     var df_sort: DataFrame = df_spell
     if (classArray.nonEmpty) {
-      //df_sort = sortRequest(df_sort, "classes.name", classArray, classOperator)
+      df_sort = sortRequest(df_sort, "classes", classArray, classOperator)
     }
     if (schoolArray.nonEmpty) {
-      df_sort = sortSchool(df_sort, "school", schoolArray, "OR")
+      // For schools, each row is a single value so a specific sort is implemented
+      df_sort = sortSchool(df_sort, schoolArray)
     }
     if (componentArray.nonEmpty) {
-      df_sort = sortComponent(df_sort, "components", componentArray, componentOperator)
+      df_sort = sortRequest(df_sort, "components", componentArray, componentOperator)
     }
     if (spellResistance.nonEmpty) {
       df_sort = df_sort.where($"spell_resistance" === spellResistance)
+    }
+    if (componentArray.nonEmpty) {
+      df_sort = sortRequest(df_sort, "description", description, "AND")
     }
     dfToArray(df_sort, $"name")
   }

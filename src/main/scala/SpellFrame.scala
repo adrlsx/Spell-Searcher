@@ -7,10 +7,7 @@ import java.net.URI
 import javax.swing._
 import scala.swing._
 
-class SpellFrame(sparkRequest: SparkRequest.type, spellName: String) extends Frame {
-
-  private val spellInfo: Map[String, String] = sparkRequest.getSpellInfo(spellName)
-  private val creatureList: Array[String] = sparkRequest.getCreatureList(spellName)
+class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellInfo: Map[String, String], val creatureList: Array[String]) extends Frame {
 
   private val spellUrl: String = spellInfo("url")
   private val spellSchool: String = spellInfo("school")

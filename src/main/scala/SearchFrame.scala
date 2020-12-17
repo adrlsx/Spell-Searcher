@@ -260,7 +260,7 @@ class SearchFrame extends MainFrame {
         for (spellName <- spellInfo){
           addSpell(spellName)
         }
-        enableResearch("Request successful ! Waiting for search request")
+        enableResearch("Request successful! Waiting for search request")
       }
     }
 
@@ -278,9 +278,27 @@ class SearchFrame extends MainFrame {
       override def mouseClicked(e: MouseEvent) {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
-          spellDisplay = Some(new SpellFrame(sparkRequest.get, spellName))
-          spellDisplay.get.centerOnScreen()
-          spellDisplay.get.open()
+          disableResearch(s"Looking informations for spell: $spellName")
+          val worker = new SwingWorker[(Map[String, String], Array[String]), (Map[String, String], Array[String])] {
+            override protected def doInBackground(): (Map[String, String], Array[String]) = {
+              // Retrieve spell and creature info
+              val spellInfo: Map[String, String] = sparkRequest.get.getSpellInfo(spellName)
+              val creatureList: Array[String] = sparkRequest.get.getCreatureList(spellName)
+              (spellInfo, creatureList)
+            }
+
+            override protected def done(): Unit = {
+              val spellCreatureInfo: (Map[String, String], Array[String]) = get()
+              val spellInfo: Map[String, String] = spellCreatureInfo._1
+              val creatureInfo: Array[String] = spellCreatureInfo._2
+              // Display new frame with spell and creature info
+              spellDisplay = Some(new SpellFrame(sparkRequest.get, spellName, spellInfo, creatureInfo))
+              spellDisplay.get.centerOnScreen()
+              spellDisplay.get.open()
+              enableResearch("Spell info retrieved! Waiting for search request")
+            }
+          }
+          worker.execute()
         }
         // elsewhere simply bring the window to the front
         else{
@@ -329,7 +347,7 @@ class SearchFrame extends MainFrame {
   }
 
   private def getDescription: Array[String] = {
-    val tempDesc = descriptionTextField.text.replaceAll("[^a-zA-Z]", " ")
+    val tempDesc = descriptionTextField.text.replaceAll("[^a-zA-Z]", " ").toLowerCase
 
     if (tempDesc.isEmpty){
       Array()
@@ -380,7 +398,7 @@ class SearchFrame extends MainFrame {
     // https://docs.oracle.com/javase/6/docs/api/javax/swing/SwingWorker.html
     val worker = new SwingWorker[Int, Int] {
       override protected def doInBackground(): Int = {
-        println("Loading spell and creature data from https://www.aonprd.com/")
+        //println("Loading spell and creature data from https://www.aonprd.com/")
         // Execute python crawler
         // External command: https://alvinalexander.com/scala/scala-execute-exec-external-system-commands-in-scala/
         val crawler: Int = "python3 src/main/python/main.py".!
@@ -390,11 +408,11 @@ class SearchFrame extends MainFrame {
       override protected def done(): Unit = {
         val crawler: Int = get()
         if (crawler == 0){
-          enableResearch("Update successful ! Waiting for search request")
+          enableResearch("Update successful! Waiting for search request")
         }
         else {
-          enableResearch("Failed update")
-          println(s"There was an error with the python crawler.\nExit code: $crawler")
+          enableResearch(s"Failed update. Crawler exit code: $crawler")
+          //println(s"There was an error with the python crawler.\nExit code: $crawler")
         }
       }
     }
