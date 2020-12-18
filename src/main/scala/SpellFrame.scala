@@ -1,5 +1,4 @@
 import SwingGeneralFunc.{addSeparator, getHorizontalBox, getWebsiteBtnBox}
-import org.apache.spark.sql.DataFrame
 
 import java.awt.{Desktop, Image}
 import java.awt.event.{MouseAdapter, MouseEvent}
@@ -7,7 +6,7 @@ import java.net.URI
 import javax.swing._
 import scala.swing._
 
-class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellInfo: Map[String, String], val creatureList: Array[String]) extends Frame {
+class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellInfo: Map[String, String], val creatureList: List[String]) extends Frame {
 
   private val spellUrl: String = spellInfo("url")
   private val spellSchool: String = spellInfo("school")

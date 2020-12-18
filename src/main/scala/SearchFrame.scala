@@ -236,27 +236,27 @@ class SearchFrame extends MainFrame {
     // Reset result field to only display new results
     resetResult()
 
-    val classArray: Array[String] = getArrayFromCheckbox(checkBoxClassMap)
-    val schoolArray: Array[String] = getArrayFromCheckbox(checkBoxSchoolMap)
-    val componentArray: Array[String] = getArrayFromCheckbox(checkBoxComponentMap)
+    val classArray: List[String] = getArrayFromCheckbox(checkBoxClassMap)
+    val schoolArray: List[String] = getArrayFromCheckbox(checkBoxSchoolMap)
+    val componentArray: List[String] = getArrayFromCheckbox(checkBoxComponentMap)
 
     val classOperator: String = getOperatorFromButton(btnClassOr)
     val componentOperator: String = getOperatorFromButton(btnComponentOr)
     val spellResistance: String = getSpellResistance
 
-    val description: Array[String] = getDescription
+    val description: List[String] = getDescription
 
     // SwingWorker to perform long process in background thread in order not to freeze the UI
     // https://www.geeksforgeeks.org/swingworker-in-java/
     // https://docs.oracle.com/javase/6/docs/api/javax/swing/SwingWorker.html
-    val worker = new SwingWorker[Array[String], Array[String]] {
-      override protected def doInBackground(): Array[String] = {
-        val spellInfo: Array[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
+    val worker = new SwingWorker[List[String], List[String]] {
+      override protected def doInBackground(): List[String] = {
+        val spellInfo: List[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
         spellInfo
       }
 
       override protected def done(): Unit = {
-        val spellInfo: Array[String] = get()
+        val spellInfo: List[String] = get()
         for (spellName <- spellInfo){
           addSpell(spellName)
         }
@@ -279,18 +279,18 @@ class SearchFrame extends MainFrame {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
           disableResearch(s"Looking for spell: '$spellName''")
-          val worker = new SwingWorker[(Map[String, String], Array[String]), (Map[String, String], Array[String])] {
-            override protected def doInBackground(): (Map[String, String], Array[String]) = {
+          val worker = new SwingWorker[(Map[String, String], List[String]), (Map[String, String], List[String])] {
+            override protected def doInBackground(): (Map[String, String], List[String]) = {
               // Retrieve spell and creature info
               val spellInfo: Map[String, String] = sparkRequest.get.getSpellInfo(spellName)
-              val creatureList: Array[String] = sparkRequest.get.getCreatureList(spellName)
+              val creatureList: List[String] = sparkRequest.get.getCreatureList(spellName)
               (spellInfo, creatureList)
             }
 
             override protected def done(): Unit = {
-              val spellCreatureInfo: (Map[String, String], Array[String]) = get()
+              val spellCreatureInfo: (Map[String, String], List[String]) = get()
               val spellInfo: Map[String, String] = spellCreatureInfo._1
-              val creatureInfo: Array[String] = spellCreatureInfo._2
+              val creatureInfo: List[String] = spellCreatureInfo._2
               // Display new frame with spell and creature info
               spellDisplay = Some(new SpellFrame(sparkRequest.get, spellName, spellInfo, creatureInfo))
               spellDisplay.get.centerOnScreen()
@@ -312,8 +312,8 @@ class SearchFrame extends MainFrame {
     labelNbResult.text = s"Number: $nbResult"
   }
 
-  private def getArrayFromCheckbox(map: mutable.TreeMap[String, CheckBox]): Array[String] = {
-    var stringArray: Array[String] = Array()
+  private def getArrayFromCheckbox(map: mutable.TreeMap[String, CheckBox]): List[String] = {
+    var stringArray: List[String] = List[String]()
 
     // Get selected checkbox, and put key in Array
     for (mapElement <- map) {
@@ -346,14 +346,14 @@ class SearchFrame extends MainFrame {
     }
   }
 
-  private def getDescription: Array[String] = {
+  private def getDescription: List[String] = {
     val tempDesc = descriptionTextField.text.replaceAll("[^a-zA-Z]", " ").toLowerCase
 
     if (tempDesc.isEmpty){
-      Array()
+      List[String]()
     }
     else{
-      tempDesc.split(" +")
+      tempDesc.split(" +").toList
     }
   }
 

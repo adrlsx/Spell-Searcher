@@ -1,6 +1,8 @@
 import org.apache.spark.sql.functions.{array_contains, collect_set, explode}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{ColumnName, DataFrame, Dataset, Row, SparkSession}
+import org.apache.spark.sql.{ColumnName, DataFrame, Row, SparkSession}
+
+import scala.collection.mutable
 
 object SparkRequest {
   // Start Apache Spark
@@ -36,20 +38,16 @@ object SparkRequest {
   private def dfToMap(df: DataFrame): Map[String, String] = {
     var infoMap: Map[String, String] = Map()
     for(key <- df.columns){
-      val value: String = df.select(key).first().toString().replaceAll("\\[", "").replaceAll("]", "")
-      infoMap += (key -> value)
+      val value: String = df.select(key).first().toString()
+      val formattedValue = value.replaceAll("WrappedArray\\(", "").replaceAll("\\)", "").stripPrefix("[").stripSuffix("]")
+      infoMap += (key -> formattedValue)
     }
     infoMap
   }
 
-  private def dfToArray(df: DataFrame, columnName: ColumnName): Array[String] = {
-    val infoArray = df.select(columnName).map(row => row.toString().stripPrefix("[").stripSuffix("]"))
-    infoArray.collect()
-  }
-
   private def sanitize(string: String): String = string.toLowerCase.capitalize
 
-  private def sortRequest(df: DataFrame, infoToSort: String, inputArray: Array[String], operator: String) : DataFrame = {
+  private def sortRequest(df: DataFrame, infoToSort: String, inputArray: List[String], operator: String) : DataFrame = {
     // Union start with an empty dataframe and will increase its size every time
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
 
@@ -77,7 +75,7 @@ object SparkRequest {
     spell_list
   }
 
-  private def sortSchool(df: DataFrame, inputArray: Array[String]) : DataFrame = {
+  private def sortSchool(df: DataFrame, inputArray: List[String]) : DataFrame = {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
     // Always OR operator as a spell can only have one school
     for(value <- inputArray) {
@@ -87,8 +85,8 @@ object SparkRequest {
     spell_list
   }
 
-  def getSpellList(classArray: Array[String], classOperator: String, schoolArray: Array[String], componentArray: Array[String],
-                   componentOperator: String, spellResistance: String, description: Array[String]): Array[String] = {
+  def getSpellList(classArray: List[String], classOperator: String, schoolArray: List[String], componentArray: List[String],
+                   componentOperator: String, spellResistance: String, description: List[String]): List[String] = {
     var df_sort: DataFrame = df_spell
     if (classArray.nonEmpty) {
       df_sort = sortRequest(df_sort, "classes", classArray, classOperator)
@@ -103,10 +101,11 @@ object SparkRequest {
     if (spellResistance.nonEmpty) {
       df_sort = df_sort.where($"spell_resistance" === spellResistance)
     }
-    if (componentArray.nonEmpty) {
+    if (description.nonEmpty) {
       df_sort = sortRequest(df_sort, "description", description, "AND")
     }
-    dfToArray(df_sort, $"name")
+    val formatted_df = df_sort.select($"name").map(row => row.toString().stripPrefix("[").stripSuffix("]"))
+    formatted_df.collect().toList
   }
 
   def getSpellInfo(spellName: String): Map[String, String] = {
@@ -114,13 +113,18 @@ object SparkRequest {
     dfToMap(spellInfo)
   }
 
-  def getCreatureList(spellName: String): Array[String] = {
+  def getCreatureList(spellName: String): List[String] = {
     val df = reverse_index.where($"spells" === sanitize(spellName))
-    dfToArray(df, $"creatures")
+    val creatureList = df.select($"creatures")
+    var formattedList: List[String] = List[String]()
+    if (! creatureList.isEmpty){
+      formattedList = creatureList.map(row => row(0).asInstanceOf[mutable.WrappedArray[String]].toList).first()
+    }
+    formattedList
   }
 
   def getCreatureInfo(creatureName: String): Map[String, String] = {
-    val creatureInfo = df_creature.filter($"name" === sanitize(creatureName))
+    val creatureInfo = df_creature.where($"name" === sanitize(creatureName))
     dfToMap(creatureInfo)
   }
 }
