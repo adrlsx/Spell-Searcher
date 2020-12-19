@@ -257,7 +257,7 @@ class SearchFrame extends MainFrame {
       }
 
       override protected def done(): Unit = {
-        val spellInfo: List[String] = get()
+        val spellInfo: List[String] = get().sorted
 
         for (spellName <- spellInfo){
           addSpell(spellName)
