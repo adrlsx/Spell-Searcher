@@ -43,7 +43,7 @@ object SparkRequest {
       var formattedValue = value.stripPrefix("[").stripSuffix("]")
 
       // Only remove WrappedArray(.....) for necessary key, else can remove ending ")" for spells like "Ablative sphere (garundi)"
-      if (key.equals("classes") || key.equals("components") || key.equals("description")) {
+      if (key.equals("classes") || key.equals("components") || key.equals("description") || key.equals("spells")) {
         formattedValue = formattedValue.replaceAll("WrappedArray\\(", "").replaceAll("\\)", "")
       }
 
