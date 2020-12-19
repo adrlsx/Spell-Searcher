@@ -145,7 +145,7 @@ class SearchFrame extends MainFrame {
       addSeparator(contents)
 
       // Add box for school selection
-      contents += getGridBox("School", checkBoxClassMap, Searcher.getAllSchoolName)
+      contents += getGridBox("School", checkBoxSchoolMap, Searcher.getAllSchoolName)
 
       // Add box description for school selection
       contents += new BoxPanel(Orientation.Horizontal) {
@@ -252,11 +252,13 @@ class SearchFrame extends MainFrame {
     val worker = new SwingWorker[List[String], List[String]] {
       override protected def doInBackground(): List[String] = {
         val spellInfo: List[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
+
         spellInfo
       }
 
       override protected def done(): Unit = {
         val spellInfo: List[String] = get()
+
         for (spellName <- spellInfo){
           addSpell(spellName)
         }
@@ -279,6 +281,7 @@ class SearchFrame extends MainFrame {
         // Create the SpellFrame if it has not been created before
         if (spellDisplay.isEmpty){
           disableResearch(s"Looking for spell: '$spellName''")
+
           val worker = new SwingWorker[(Map[String, String], List[String]), (Map[String, String], List[String])] {
             override protected def doInBackground(): (Map[String, String], List[String]) = {
               // Retrieve spell and creature info
@@ -295,6 +298,7 @@ class SearchFrame extends MainFrame {
               spellDisplay = Some(new SpellFrame(sparkRequest.get, spellName, spellInfo, creatureInfo))
               spellDisplay.get.centerOnScreen()
               spellDisplay.get.open()
+
               enableResearch("Spell info retrieved! Waiting for search request")
             }
           }
@@ -321,6 +325,7 @@ class SearchFrame extends MainFrame {
         stringArray :+= mapElement._1
       }
     }
+
     stringArray
   }
 
