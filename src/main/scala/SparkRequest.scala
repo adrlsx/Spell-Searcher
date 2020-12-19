@@ -85,34 +85,43 @@ object SparkRequest {
 
   private def sortSchool(df: DataFrame, inputArray: List[String]) : DataFrame = {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
+
     // Always OR operator as a spell can only have one school
     for(value <- inputArray) {
       val selection = df.where($"school" === value)
       spell_list = spell_list.union(selection)
     }
+
     spell_list
   }
 
   def getSpellList(classArray: List[String], classOperator: String, schoolArray: List[String], componentArray: List[String],
                    componentOperator: String, spellResistance: String, description: List[String]): List[String] = {
     var df_sort: DataFrame = df_spell
+
     if (classArray.nonEmpty) {
       df_sort = sortRequest(df_sort, "classes", classArray, classOperator)
     }
+
     if (schoolArray.nonEmpty) {
       // For schools, each row is a single value so a specific sort is implemented
       df_sort = sortSchool(df_sort, schoolArray)
     }
+
     if (componentArray.nonEmpty) {
       df_sort = sortRequest(df_sort, "components", componentArray, componentOperator)
     }
+
     if (spellResistance.nonEmpty) {
       df_sort = df_sort.where($"spell_resistance" === spellResistance)
     }
+
     if (description.nonEmpty) {
       df_sort = sortRequest(df_sort, "description", description, "AND")
     }
+
     val formatted_df = df_sort.select($"name").map(row => row.toString().stripPrefix("[").stripSuffix("]"))
+
     formatted_df.collect().toList
   }
 
