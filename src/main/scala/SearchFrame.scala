@@ -293,9 +293,10 @@ class SearchFrame extends MainFrame {
             override protected def done(): Unit = {
               val spellCreatureInfo: (Map[String, String], List[String]) = get()
               val spellInfo: Map[String, String] = spellCreatureInfo._1
-              val creatureInfo: List[String] = spellCreatureInfo._2
+              val creatureList: List[String] = spellCreatureInfo._2.sorted
+
               // Display new frame with spell and creature info
-              spellDisplay = Some(new SpellFrame(sparkRequest.get, spellName, spellInfo, creatureInfo))
+              spellDisplay = Some(new SpellFrame(sparkRequest.get, spellName, spellInfo, creatureList))
               spellDisplay.get.centerOnScreen()
               spellDisplay.get.open()
 
