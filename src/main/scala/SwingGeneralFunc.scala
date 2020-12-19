@@ -21,7 +21,7 @@ object SwingGeneralFunc {
 
   def getWebsiteBtnBox(url: String): BoxPanel = {
     new BoxPanel(Orientation.Horizontal) {
-      val websiteBtn: Button = Button("See on Archives of Nethys") { Desktop.getDesktop.browse(new URI(url)) }
+      val websiteBtn: Button = Button("See spell on Archives of Nethys") { Desktop.getDesktop.browse(new URI(url)) }
       websiteBtn.background = new Color(52, 152, 219)
 
       contents += websiteBtn
