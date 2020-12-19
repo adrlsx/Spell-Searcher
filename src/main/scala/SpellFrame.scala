@@ -18,8 +18,8 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
   private val spellImgPath: String = {
     val formatName: String = getFormatName(spellName)
 
-    if (Files.exists(Paths.get(s"output/img/$formatName.png"))) {
-      s"output/img/$formatName.png"
+    if (Files.exists(Paths.get(s"res/img/$formatName.jpg"))) {
+      s"res/img/$formatName.jpg"
     } else {
       "res/.back.png"
     }
