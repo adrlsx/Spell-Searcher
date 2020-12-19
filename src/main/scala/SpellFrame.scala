@@ -42,16 +42,15 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
   jPanelResult.setLayout(new BoxLayout(jPanelResult, BoxLayout.Y_AXIS))
 
   // initialisation for creature frame
-  private val creatureNameLabel: Label = new Label()
-  private val creatureSpellLabel: Label = new Label()
-
   private val creatureWebSiteBtn: Button = Button("") {}
   creatureWebSiteBtn.background = new Color(52, 152, 219)
 
-  private val descriptionTextArea = new JTextArea()
-  descriptionTextArea.setEditable(false)
-  descriptionTextArea.setLineWrap(true)
-  descriptionTextArea.setWrapStyleWord(true)
+  private val creatureNameLabel: Label = new Label()
+
+  private val multilineTextArea = new JTextArea()
+  multilineTextArea.setEditable(false)
+  multilineTextArea.setLineWrap(true)
+  multilineTextArea.setWrapStyleWord(true)
 
   // Create box for creature panel
   private val creatureBoxPanel: BoxPanel = new BoxPanel(Orientation.Horizontal) {
@@ -70,6 +69,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
 
       // Add creature name box
       contents += new BoxPanel(Orientation.Horizontal) {
+        contents += Swing.HStrut(5)
         contents += new Label("Creature Name: ")
         contents += creatureNameLabel
         contents += Swing.HGlue
@@ -77,20 +77,8 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
 
       contents += Swing.VStrut(5)
 
-      // Add creature spells box
-      contents += new BoxPanel(Orientation.Horizontal) {
-        contents += new Label("Spell: ")
-        contents += creatureSpellLabel
-        contents += Swing.HGlue
-      }
-
-      contents += Swing.VStrut(5)
-
-      // Add creature description box
-      contents += getHorizontalBox("Description", "")
-      contents += Component.wrap(descriptionTextArea)
-
-      contents += Swing.Glue
+      // Add box for creature spells and description
+      contents += Component.wrap(multilineTextArea)
     }
   }
 
@@ -171,14 +159,16 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
       override protected def done(): Unit = {
         val creatureInfo: Map[String, String] = get()
 
-        creatureNameLabel.text = selectedCreatureName
-        creatureSpellLabel.text = creatureInfo("spells")
-
         creatureWebSiteBtn.action = swing.Action("See creature on Archives of Nethys") {
           Desktop.getDesktop.browse(new URI(getFormatUrl(creatureInfo("url"))))
         }
 
-        descriptionTextArea.setText(creatureInfo("description"))
+        creatureNameLabel.text = selectedCreatureName
+        multilineTextArea.append("Spell:\n")
+        multilineTextArea.append(creatureInfo("spells"))
+
+        multilineTextArea.append("\n\nDescription:\n")
+        multilineTextArea.append(creatureInfo("description"))
 
         creatureBoxPanel.visible = true
 
