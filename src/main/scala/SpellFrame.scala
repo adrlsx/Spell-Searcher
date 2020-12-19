@@ -8,7 +8,7 @@ import scala.swing._
 
 class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellInfo: Map[String, String], val creatureList: List[String]) extends Frame {
 
-  private val spellUrl: String = spellInfo("url")
+  private val spellUrl: String = getFormatUrl(spellInfo("url"))
   private val spellSchool: String = spellInfo("school")
   private val spellClasses: String = spellInfo("classes")
   private val spellComponents: String = spellInfo("components")
@@ -43,6 +43,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
   descriptionTextArea.setLineWrap(true)
   descriptionTextArea.setWrapStyleWord(true)
 
+  // Create box for creature panel
   private val creatureBoxPanel: BoxPanel = new BoxPanel(Orientation.Horizontal) {
     contents += Swing.HStrut(10)
     contents += Component.wrap(new JSeparator(SwingConstants.VERTICAL))
@@ -83,6 +84,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
     }
   }
 
+  // Set content Frame
   contents = new BoxPanel(Orientation.Horizontal) {
     // Set frame border margin
     border = Swing.EmptyBorder(10, 10, 10, 10)
@@ -104,6 +106,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
 
           contents += Swing.VStrut(5)
 
+          // Init scroll panel for creature results
           val jScrollPaneResult = new JScrollPane(jPanelResult)
           jScrollPaneResult.setPreferredSize(new Dimension(300, 583))
 
@@ -144,6 +147,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
     creatureBoxPanel.preferredSize = new Dimension(350, 0)
     creatureBoxPanel.visible = false
 
+    // Add creature box panel to frame
     contents += creatureBoxPanel
   }
 
@@ -156,11 +160,12 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
 
       override protected def done(): Unit = {
         val creatureInfo: Map[String, String] = get()
+
         creatureNameLabel.text = selectedCreatureName
         creatureSpellLabel.text = creatureInfo("spells")
 
         creatureWebSiteBtn.action = swing.Action("See creature on Archives of Nethys") {
-          Desktop.getDesktop.browse(new URI(creatureInfo("url")))
+          Desktop.getDesktop.browse(new URI(getFormatUrl(creatureInfo("url"))))
         }
 
         descriptionTextArea.setText(creatureInfo("description"))
@@ -194,5 +199,9 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
     }
 
     labelNbResult.text = s"Number: $nbResult"
+  }
+
+  private def getFormatUrl(url: String): String = {
+    url.replaceAll(" ", "%20")
   }
 }
