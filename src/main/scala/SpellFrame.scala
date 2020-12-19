@@ -3,6 +3,7 @@ import SwingGeneralFunc.{addSeparator, getHorizontalBox, getWebsiteBtnBox}
 import java.awt.{Desktop, Image}
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.net.URI
+import java.nio.file.{Files, Paths}
 import javax.swing._
 import scala.swing._
 
@@ -13,7 +14,16 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
   private val spellClasses: String = spellInfo("classes")
   private val spellComponents: String = spellInfo("components")
   private val spellResistance: String = spellInfo("spell_resistance")
-  private val spellImgPath: String = s"output/img/${spellName.toLowerCase}.png"
+
+  private val spellImgPath: String = {
+    val formatName: String = getFormatName(spellName)
+
+    if (Files.exists(Paths.get(s"output/img/$formatName.png"))) {
+      s"output/img/$formatName.png"
+    } else {
+      "res/.back.png"
+    }
+  }
 
   // var is mutable contrary to val
   private var nbResult: Int = 0
@@ -203,5 +213,9 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
 
   private def getFormatUrl(url: String): String = {
     url.replaceAll(" ", "%20")
+  }
+
+  private def getFormatName(name: String): String = {
+    name.toLowerCase.replaceAll("'", "_").replaceAll(" \\(.*\\)", "").replaceAll("/", " ")
   }
 }
