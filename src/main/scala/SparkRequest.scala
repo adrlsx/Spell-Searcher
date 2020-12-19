@@ -39,9 +39,17 @@ object SparkRequest {
     var infoMap: Map[String, String] = Map()
     for(key <- df.columns){
       val value: String = df.select(key).first().toString()
-      val formattedValue = value.replaceAll("WrappedArray\\(", "").replaceAll("\\)", "").stripPrefix("[").stripSuffix("]")
+
+      var formattedValue = value.stripPrefix("[").stripSuffix("]")
+
+      // Only remove WrappedArray(.....) for necessary key, else can remove ending ")" for spells like "Ablative sphere (garundi)"
+      if (key.equals("classes") || key.equals("components") || key.equals("description")) {
+        formattedValue = formattedValue.replaceAll("WrappedArray\\(", "").replaceAll("\\)", "")
+      }
+
       infoMap += (key -> formattedValue)
     }
+
     infoMap
   }
 
