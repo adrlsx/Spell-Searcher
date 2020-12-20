@@ -9,7 +9,6 @@
 
 # Update the system
 sudo apt update
-sudo apt full-upgrade --yes
 
 # Install Java
 sudo apt install default-jdk
