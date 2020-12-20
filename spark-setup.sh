@@ -27,8 +27,8 @@ mkdir ./logs/history-server
 cp ./conf/spark-defaults.conf.template ./conf/spark-defaults.conf
 echo "
 spark.eventLog.enabled           true
-spark.eventLog.dir               /home/$USER/spark-3.0.1-bin-hadoop3.2/logs/history-server
-spark.history.fs.logDirectory    /home/$USER/spark-3.0.1-bin-hadoop3.2/logs/history-server" >> ./conf/spark-defaults.conf
+spark.eventLog.dir               $HOME/spark-3.0.1-bin-hadoop3.2/logs/history-server
+spark.history.fs.logDirectory    $HOME/spark-3.0.1-bin-hadoop3.2/logs/history-server" >> ./conf/spark-defaults.conf
 
 # Apache Spark console log level
 cp ./conf/log4j.properties.template ./conf/log4j.properties
