@@ -119,14 +119,14 @@
 					}
 					$name.="<a href='".$data2["url"]."'>".$data2["name"]."</a>";
 				}
-				// L'affichage change si des créatues apprennent le sort
+				// L'affichage change si des créatures apprennent le sort
 				if ($name != "")
 				{
-					echo "<li><img class='spell-card' src='/spells/".str_replace("'","_",strtolower($data["name"])).".png'"." alt='A card ' height='250' /><a href='".$data["url"]."'>".$data["name"]."</a>, creatures : ".$name."</li>";
+					echo "<li><img class='spell-card' src='/spells/".str_replace("'","_",strtolower($data["name"])).".jpg'"." alt='A card ' height='250' /><a href='".$data["url"]."'>".$data["name"]."</a>, creatures : ".$name."</li>";
 				}
 				else
 				{
-					echo "<li><img class='spell-card' src='/spells/".str_replace("'","_",strtolower($data["name"])).".png'"." alt='A card ' height='250' /><a href='".$data["url"]."'>".$data["name"]."</a></li>";
+					echo "<li><img class='spell-card' src='/spells/".str_replace("'","_",strtolower($data["name"])).".jpg'"." alt='A card ' height='250' /><a href='".$data["url"]."'>".$data["name"]."</a></li>";
 				}
 			}
 			else

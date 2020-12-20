@@ -22,7 +22,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
     if (Files.exists(Paths.get(s"$path/$formatName.jpg"))) {
       s"$path/$formatName.jpg"
     } else {
-      s"$path/.back.png"
+      s"$path/.back.jpg"
     }
   }
 
@@ -153,8 +153,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
   private def showCreatureFrame(selectedCreatureName: String): Unit = {
     val worker = new SwingWorker[Map[String, String], Map[String, String]] {
       override protected def doInBackground(): Map[String, String] = {
-        val creatureInfo: Map[String, String] = sparkRequest.getCreatureInfo(selectedCreatureName)
-        creatureInfo
+        sparkRequest.getCreatureInfo(selectedCreatureName)
       }
 
       override protected def done(): Unit = {
@@ -165,11 +164,7 @@ class SpellFrame(sparkRequest: SparkRequest.type, spellName: String, val spellIn
         }
 
         creatureNameLabel.text = selectedCreatureName
-        multilineTextArea.append("Spell:\n")
-        multilineTextArea.append(creatureInfo("spells"))
-
-        multilineTextArea.append("\n\nDescription:\n")
-        multilineTextArea.append(creatureInfo("description"))
+        multilineTextArea.setText(s"Spells:\n${creatureInfo("spells")}\n\nDescription:\n${creatureInfo("description")}")
 
         creatureBoxPanel.visible = true
 

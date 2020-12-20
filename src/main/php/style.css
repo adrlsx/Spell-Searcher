@@ -589,9 +589,10 @@ div .webring-banner__image
 	{
 		min-width:100px;
 	}
-	.webring-banner__info 
+	.webring-banner__info
 	{
-	align-items:center;
+		align-items: center;
+	}
 }
 
 

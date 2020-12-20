@@ -251,11 +251,8 @@ class SearchFrame extends MainFrame {
     // https://docs.oracle.com/javase/6/docs/api/javax/swing/SwingWorker.html
     val worker = new SwingWorker[List[String], List[String]] {
       override protected def doInBackground(): List[String] = {
-        val spellInfo: List[String] = sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
-
-        spellInfo
+        sparkRequest.get.getSpellList(classArray, classOperator, schoolArray, componentArray, componentOperator, spellResistance, description)
       }
-
       override protected def done(): Unit = {
         val spellInfo: List[String] = get().sorted
 
@@ -265,7 +262,6 @@ class SearchFrame extends MainFrame {
         enableResearch("Request successful! Waiting for search request")
       }
     }
-
     worker.execute()
   }
 

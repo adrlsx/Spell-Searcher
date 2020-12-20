@@ -8,23 +8,10 @@ This is a small project to get started with web crawling and distributed computi
 
 For more information please refer to the [Instructions](Instructions-Devoir2-Exercice1.pdf) (in French).
 
-# Web interface
+## Interface
+Two interfaces are available for this project. The main one is the Desktop interface in Scala Swing, using Apache Spark as a backend to process request.
 
-Once the server database has been initialized, a web interface is available for spells searching. An example of it without the pictures is available [there](https://azura-levidre.000webhostapp.com/spellsv2.php). Please be aware that MySQL could be down.
-For updating the database with a new creature.jsonl or a new spell.jsonl, it's [here](https://azura-levidre.000webhostapp.com/bdd-envoi.php).
-
-## How to use
-
-The user selects the options in a form and send it. By default, all the options are set on Anything what means it won't select spells depending on it. The page then shows the spells depending on the form the user fulfilled.
-
-Of course the user could want some particular spells, they can write some keywords in the search box so only the spells with those keywords in their description will be displayed.
-
-The web interface will display the list of spells with for each one its card picture, its name and the creatures able to learn it if there are some. The spell name and the creatures ones are links to their pages.
-
-## Technology
-
-The form is in html and is sent with a post to the same page. The php code will retreive it and connects to the database, then it creates the SQL request and send it. It retrieves the response and verify it corresponds to the type selected in the form and the possible keywords. It will resend a new request to the database asking for the creatures learning each spell and display the spells.
-The database itself is MySQL.
+The second one is a Web interface written in PHP and using a MySQL database as a backend. This interface is a more straight-forward approach available [here](https://azura-levidre.000webhostapp.com/spells).
 
 ## Installation
 ### Scrapy

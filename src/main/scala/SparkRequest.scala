@@ -1,4 +1,4 @@
-import org.apache.spark.sql.functions.{array, array_contains, array_intersect, arrays_overlap, collect_set, explode, lit, typedLit}
+import org.apache.spark.sql.functions.{array_contains, arrays_overlap, collect_set, explode, typedLit}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
@@ -32,7 +32,7 @@ object SparkRequest {
     val reverse_index: DataFrame = df.select(explode($"spells").as("spells"), $"name")
     // groupBy: https://sparkbyexamples.com/spark/using-groupby-on-dataframe/
     // collect_set: https://stackoverflow.com/questions/43357727/how-to-do-opposite-of-explode-in-pyspark
-    reverse_index.groupBy("spells").agg(collect_set("name").as("creatures")).distinct()
+    reverse_index.groupBy("spells").agg(collect_set("name").as("creatures"))
   }
 
   private def dfToMap(df: DataFrame): Map[String, String] = {
@@ -77,18 +77,6 @@ object SparkRequest {
     spell_list
   }
 
-  private def sortSchool(df: DataFrame, inputArray: List[String]) : DataFrame = {
-    var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
-
-    // Always OR operator as a spell can only have one school
-    for(value <- inputArray) {
-      val selection = df.where($"school" === value)
-      spell_list = spell_list.union(selection).distinct()
-    }
-
-    spell_list
-  }
-
   def getSpellList(classArray: List[String], classOperator: String, schoolArray: List[String], componentArray: List[String],
                    componentOperator: String, spellResistance: String, description: List[String]): List[String] = {
     var df_sort: DataFrame = df_spell
@@ -98,8 +86,9 @@ object SparkRequest {
     }
 
     if (schoolArray.nonEmpty) {
-      // For schools, each row is a single value so a specific sort is implemented
-      df_sort = sortSchool(df_sort, schoolArray)
+      // For schools, each row is a single value and not an array so a specific sort is implemented
+      // If the value is one of the selection (schoolArray) then return the spell
+      df_sort = df_sort.where(array_contains(typedLit(schoolArray), $"school"))
     }
 
     if (componentArray.nonEmpty) {
@@ -125,8 +114,7 @@ object SparkRequest {
   }
 
   def getCreatureList(spellName: String): List[String] = {
-    val df = reverse_index.where($"spells" === sanitize(spellName))
-    val creatureList = df.select($"creatures")
+    val creatureList = reverse_index.where($"spells" === sanitize(spellName)).select($"creatures")
     var formattedList: List[String] = List[String]()
     if (! creatureList.isEmpty){
       formattedList = creatureList.map(row => row(0).asInstanceOf[mutable.WrappedArray[String]].toList).first()
