@@ -12,7 +12,7 @@ For more information please refer to the [Instructions](Instructions-Devoir2-Exe
 Two interfaces are available for this project. The main one is the Desktop interface in Scala Swing, using Apache Spark as a backend to process request.
 
 The orange "Update Database" button launches the python crawler in order to retrieve spells and creatures information from [Archives of Nethys](https://www.aonprd.com/).
-It is mandatory to use this button for a first use as it will generate the JSON files needed for Apache Spark processing. You will need the Scrapy package installed on your machine for the crawler to work.
+It is mandatory to use this button for a first use, as it will generate the JSON files needed for Apache Spark processing. You will need the Scrapy package installed on your machine for the crawler to work.
 
 ![Scala Swing Desktop Interface](Desktop_Interface.png)
 
