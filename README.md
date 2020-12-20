@@ -9,14 +9,19 @@ This is a small project to get started with web crawling and distributed computi
 For more information please refer to the [Instructions](Instructions-Devoir2-Exercice1.pdf) (in French).
 
 ## Interface
-Two interfaces are available for this project. The main one is the Desktop interface in Scala Swing, using Apache Spark as a backend to process request.
+Two interfaces are available for this project. The main one is the Desktop interface in [Scala Swing](https://github.com/scala/scala-swing), using [Apache Spark™](https://spark.apache.org/) as a backend to process request.
 
 The orange "Update Database" button launches the python crawler in order to retrieve spells and creatures information from [Archives of Nethys](https://www.aonprd.com/).
-It is mandatory to use this button for a first use, as it will generate the JSON files needed for Apache Spark processing. You will need the Scrapy package installed on your machine for the crawler to work.
+The first launch will take longer than the others as the crawler will automatically load the database from the website and generate the JSON files needed for [Apache Spark™](https://spark.apache.org/) processing.
+
+You will need the [Scrapy](https://scrapy.org/) package installed on your machine for the crawler to work.
+You can expect the crawler to retrieve all information in between 2 and 10 minutes, depending on your internet speed.
+Following updates will be faster because HTTP requests are cached locally.
 
 ![Scala Swing Desktop Interface](Desktop_Interface.png)
 
-The second interface is a Web interface written in PHP and using a MySQL database as a backend. This interface is a more straight-forward approach available [here](https://azura-levidre.000webhostapp.com/spells).
+The second interface is a Web interface written in PHP and using a MySQL database as a backend.
+This interface is a more straight-forward approach available [here](https://azura-levidre.000webhostapp.com/spellsv2).
 
 ## Installation
 ### Scrapy

@@ -1,6 +1,3 @@
-# Ignore the HTTP Cache from Scrapy
-.scrapy
-
 # Created by https://www.toptal.com/developers/gitignore/api/intellij+all,sbt,scala,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij+all,sbt,scala,python
 
@@ -250,5 +247,3 @@ project/plugins/project/
 *.class
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,sbt,scala,python
-# Project exclude paths
-/output/
