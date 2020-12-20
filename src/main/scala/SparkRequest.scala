@@ -1,6 +1,6 @@
-import org.apache.spark.sql.functions.{array_contains, collect_set, explode}
+import org.apache.spark.sql.functions.{array, array_contains, array_intersect, arrays_overlap, collect_set, explode, lit, typedLit}
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{ColumnName, DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 import scala.collection.mutable
 
@@ -32,7 +32,7 @@ object SparkRequest {
     val reverse_index: DataFrame = df.select(explode($"spells").as("spells"), $"name")
     // groupBy: https://sparkbyexamples.com/spark/using-groupby-on-dataframe/
     // collect_set: https://stackoverflow.com/questions/43357727/how-to-do-opposite-of-explode-in-pyspark
-    reverse_index.groupBy("spells").agg(collect_set("name").as("creatures"))
+    reverse_index.groupBy("spells").agg(collect_set("name").as("creatures")).distinct()
   }
 
   private def dfToMap(df: DataFrame): Map[String, String] = {
@@ -60,13 +60,9 @@ object SparkRequest {
     var spell_list: DataFrame = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], df.schema)
 
     if (operator == "OR") {
-      // Test every value chosen by the user
-      for(value <- inputArray) {
-        // Each row contains a array, so checks the existence of the value for each array
-        val selection = df.where(array_contains(df(infoToSort), value))
-        // OR operator is represented as an union of dataframes
-        spell_list = spell_list.union(selection)
-      }
+      // https://stackoverflow.com/questions/43904622/how-to-filter-spark-dataframe-by-array-column-containing-any-of-the-values-of-so
+      // If there is at least one of the selection (inputArray) in the column then the two arrays overlap
+      spell_list = df.where(arrays_overlap(df(infoToSort), typedLit(inputArray)))
     }
     else if (operator == "AND") {
       // Intersections start with a full dataframe and will reduce its size every time
@@ -74,9 +70,7 @@ object SparkRequest {
       // Test every value chosen by the user
       for(value <- inputArray) {
         // Each row contains a array, so checks the existence of the value for each array
-        val selection = df.where(array_contains(df(infoToSort), value))
-        // AND operator is represented as an intersection between dataframes
-        spell_list = spell_list.intersect(selection)
+        spell_list = spell_list.where(array_contains(spell_list(infoToSort), value))
       }
     }
 
@@ -89,7 +83,7 @@ object SparkRequest {
     // Always OR operator as a spell can only have one school
     for(value <- inputArray) {
       val selection = df.where($"school" === value)
-      spell_list = spell_list.union(selection)
+      spell_list = spell_list.union(selection).distinct()
     }
 
     spell_list
