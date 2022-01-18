@@ -9,7 +9,7 @@ This is a small project to get started with web crawling and distributed computi
 For more information please refer to the [Instructions](Instructions-Devoir2-Exercice1.pdf) (in French).
 
 ## Interface
-Two interfaces are available for this project. The main one is the Desktop interface in [Scala Swing](https://github.com/scala/scala-swing), using [Apache Spark™](https://spark.apache.org/) as a backend to process request.
+This project interface is a desktop interface in [Scala Swing](https://github.com/scala/scala-swing), using [Apache Spark™](https://spark.apache.org/) as a backend to process request.
 
 The orange "Update Database" button launches the python crawler in order to retrieve spells and creatures information from [Archives of Nethys](https://www.aonprd.com/).
 The first launch will take longer than the others as the crawler will automatically load the database from the website and generate the JSON files needed for [Apache Spark™](https://spark.apache.org/) processing.
@@ -19,9 +19,6 @@ You can expect the crawler to retrieve all information in between 2 and 10 minut
 Following updates will be faster because HTTP requests are cached locally.
 
 ![Scala Swing Desktop Interface](Desktop_Interface.png)
-
-The second interface is a Web interface written in PHP and using a MySQL database as a backend.
-This interface is a more straight-forward approach available [here](https://azura-levidre.000webhostapp.com/spellsv2).
 
 ## Installation
 ### Scrapy
@@ -47,8 +44,7 @@ You can also refer to the documentation: [Apache Spark Installation](https://spa
 
 ## Authors
 * [maximenrb](https://github.com/maximenrb)
-* [adrienls](https://github.com/adrienls)
-* [LisaMoulis](https://github.com/LisaMoulis)
+* [adrlsx](https://github.com/adrlsx)
 
 ## License
 This project is licensed under the GNU AGPLv3 License - see the [LICENSE.md](LICENSE) file for details

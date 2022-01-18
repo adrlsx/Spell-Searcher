@@ -1,3 +1,6 @@
+# Output directory
+output/
+
 # Created by https://www.toptal.com/developers/gitignore/api/intellij+all,sbt,scala,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=intellij+all,sbt,scala,python
 
